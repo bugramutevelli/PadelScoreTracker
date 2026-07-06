@@ -6,6 +6,8 @@ Ralli, iPhone ve Apple Watch için özgün bir padel skor takip uygulamasıdır.
 
 `Preview/index.html` dosyasını çift tıklayarak etkileşimli iPhone ve Apple Watch arayüzünü tarayıcıda açabilirsiniz. Bu önizleme görsel/etkileşim kontrolü içindir; gerçek SwiftUI uygulaması Xcode üzerinde çalışır.
 
+Apple Watch ekranını büyük ve etkileşimli görmek için `Preview/watch.html` dosyasını açın.
+
 ![Ralli Windows önizlemesi](Preview/ralli-preview.png)
 
 ## Projeyi açma
