@@ -194,9 +194,10 @@ private struct WatchMatchView: View {
     private func playerRow(name: String, index: Int) -> some View {
         HStack(spacing: 3) {
             if match.serverIndex == index {
-                Image(systemName: "tennisball.fill")
-                    .font(.system(size: 8))
-                    .foregroundStyle(.green)
+                Image("TennisBallIcon")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 11, height: 11)
             }
             Text(name).lineLimit(1).minimumScaleFactor(0.65)
         }
