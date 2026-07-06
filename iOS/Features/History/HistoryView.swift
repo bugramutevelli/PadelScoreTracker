@@ -26,6 +26,15 @@ struct HistoryView: View {
                                 Spacer()
                                 Text("\(Int(match.duration) / 60) dk")
                             }.font(.caption).foregroundStyle(.secondary)
+                            if let health = match.workoutMetrics {
+                                HStack(spacing: 12) {
+                                    Label("\(Int(health.activeCalories)) kcal", systemImage: "flame.fill")
+                                    Label("\(health.steps)", systemImage: "figure.walk")
+                                    Label(String(format: "%.2f km", health.distanceMeters / 1000), systemImage: "location.fill")
+                                }
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                            }
                         }.padding(.vertical, 6)
                     }.onDelete(perform: store.delete)
                 }

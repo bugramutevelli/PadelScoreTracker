@@ -43,6 +43,10 @@ Bu depo, Xcode proje dosyasını tekrarlanabilir biçimde üretmek için XcodeGe
 - `Watch`: SwiftUI saat uygulaması
 - `Tests`: Skor, tie-break, altın puan ve geri alma testleri
 
+## Apple Sağlık
+
+Watch uygulaması maç başladığında HealthKit izni ister ve antrenmanı Tenis türünde kaydeder. Aktif kalori, antrenman süresi, nabız, adım ve yürüme/koşma mesafesi canlı izlenir; maç özeti iPhone geçmişinde saklanır. İlk gerçek cihaz çalıştırmasında Xcode'da Watch hedefinin Signing & Capabilities bölümünde HealthKit yetkisinin seçili olduğunu doğrulayın.
+
 ## Sonraki ürün adımları
 
 - SwiftData + CloudKit ile iCloud geçmiş senkronizasyonu

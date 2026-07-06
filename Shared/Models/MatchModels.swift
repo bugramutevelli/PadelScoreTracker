@@ -98,6 +98,14 @@ struct ScoreSnapshot: Codable, Equatable, Sendable {
     var winner: Team?
 }
 
+struct WorkoutMetrics: Codable, Equatable, Sendable {
+    var duration: TimeInterval = 0
+    var activeCalories: Double = 0
+    var steps: Int = 0
+    var distanceMeters: Double = 0
+    var heartRate: Double = 0
+}
+
 struct PadelMatch: Codable, Identifiable, Equatable, Sendable {
     var id: UUID = UUID()
     var startedAt: Date = Date()
@@ -115,6 +123,7 @@ struct PadelMatch: Codable, Identifiable, Equatable, Sendable {
     var tieBreakPointsPlayed: Int = 0
     var winner: Team? = nil
     var history: [ScoreSnapshot] = []
+    var workoutMetrics: WorkoutMetrics? = nil
 
     var duration: TimeInterval { (endedAt ?? Date()).timeIntervalSince(startedAt) }
     var isFinished: Bool { winner != nil }

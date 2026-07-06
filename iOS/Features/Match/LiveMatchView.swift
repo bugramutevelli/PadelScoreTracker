@@ -38,7 +38,10 @@ struct LiveMatchView: View {
 
     private func header(_ match: PadelMatch) -> some View {
         HStack {
-            Label("\(Int(match.duration) / 60) dk", systemImage: "timer")
+            Label("\(Int(match.workoutMetrics?.duration ?? match.duration) / 60) dk", systemImage: "timer")
+            if let health = match.workoutMetrics {
+                Label("\(Int(health.activeCalories)) kcal", systemImage: "flame.fill")
+            }
             Spacer()
             Label("Watch eşzamanlı", systemImage: "applewatch").foregroundStyle(.green)
         }.font(.caption)

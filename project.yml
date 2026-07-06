@@ -40,8 +40,14 @@ targets:
         PRODUCT_NAME: Padel Score
         INFOPLIST_KEY_CFBundleDisplayName: Padel Score
         INFOPLIST_KEY_WKCompanionAppBundleIdentifier: com.rallipadel.ios
+        INFOPLIST_KEY_NSHealthShareUsageDescription: Padel antrenmanında kalori, nabız, adım ve mesafe bilgilerini göstermek için Sağlık verilerine erişilir.
+        INFOPLIST_KEY_NSHealthUpdateUsageDescription: Padel antrenmanını Apple Sağlık ve Fitness'a kaydetmek için izin gerekir.
         GENERATE_INFOPLIST_FILE: true
         CODE_SIGN_STYLE: Automatic
+    entitlements:
+      path: Watch/PadelScoreTrackerWatch.entitlements
+      properties:
+        com.apple.developer.healthkit: true
   PadelScoreTrackerTests:
     type: bundle.unit-test
     platform: iOS

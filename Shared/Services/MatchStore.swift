@@ -44,6 +44,14 @@ final class MatchStore: ObservableObject {
         broadcast()
     }
 
+    func updateWorkoutMetrics(_ metrics: WorkoutMetrics) {
+        guard var match = activeMatch, match.workoutMetrics != metrics else { return }
+        match.workoutMetrics = metrics
+        activeMatch = match
+        persistActiveIfNeeded()
+        broadcast()
+    }
+
     func finishEarly() {
         guard var match = activeMatch else { return }
         match.endedAt = Date()
