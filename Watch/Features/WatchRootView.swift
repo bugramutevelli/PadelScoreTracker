@@ -186,7 +186,7 @@ private struct WatchMatchView: View {
                 Text(match.pointLabel(for: team))
                     .font(.system(size: 42, weight: .black, design: .rounded))
                     .padding(.top, 7)
-                VStack(spacing: 3) {
+                VStack(spacing: 0) {
                     playerRow(name: team == .home ? match.home.first : match.away.first,
                               index: team == .home ? 0 : 1)
                     playerRow(name: team == .home ? match.home.second : match.away.second,
