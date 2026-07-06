@@ -86,14 +86,15 @@ private struct WatchMatchView: View {
                     .frame(width: 132, height: 42)
                     .background(
                         LinearGradient(
-                            colors: [Color(red: 0.68, green: 0.33, blue: 0.96),
-                                     Color(red: 0.43, green: 0.20, blue: 0.88)],
+                            colors: [Color(red: 0.68, green: 0.33, blue: 0.96).opacity(0.64),
+                                     Color(red: 0.43, green: 0.20, blue: 0.88).opacity(0.46)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         ),
                         in: Capsule()
                     )
-                    .shadow(color: Color.purple.opacity(0.35), radius: 5, y: 2)
+                    .overlay(Capsule().stroke(.white.opacity(0.16), lineWidth: 0.7))
+                    .shadow(color: Color.purple.opacity(0.22), radius: 5, y: 2)
             }
             .buttonStyle(.plain)
             .disabled(match.history.isEmpty)
@@ -201,8 +202,10 @@ private struct WatchMatchView: View {
     }
 
     private func playerRow(name: String, index: Int) -> some View {
+        let isServing = match.serverIndex == index
+
         HStack(spacing: 3) {
-            if match.serverIndex == index {
+            if isServing {
                 Image("TennisBallIcon")
                     .resizable()
                     .scaledToFit()
@@ -210,7 +213,22 @@ private struct WatchMatchView: View {
             }
             Text(name).lineLimit(1).minimumScaleFactor(0.65)
         }
-        .font(.system(size: 9, weight: match.serverIndex == index ? .bold : .medium))
-        .foregroundStyle(.white)
+        .font(.system(size: 10, weight: isServing ? .bold : .semibold, design: .rounded))
+        .tracking(0.05)
+        .foregroundStyle(isServing
+                         ? Color(red: 0.88, green: 1, blue: 0.58)
+                         : Color.white.opacity(0.86))
+        .padding(.horizontal, 6)
+        .padding(.vertical, 2)
+        .background {
+            if isServing {
+                Capsule().fill(Color(red: 0.70, green: 1, blue: 0.25).opacity(0.14))
+            }
+        }
+        .overlay {
+            if isServing {
+                Capsule().stroke(Color(red: 0.74, green: 1, blue: 0.32).opacity(0.28), lineWidth: 0.7)
+            }
+        }
     }
 }
