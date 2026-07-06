@@ -36,28 +36,23 @@ private struct WatchMatchView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 8) {
-                HStack {
-                    Text("Set \(match.homeSets)–\(match.awaySets)")
-                    Spacer()
-                    Text("Oyun \(match.currentSet.homeGames)–\(match.currentSet.awayGames)")
-                }.font(.caption2).lineLimit(1)
+                scoreHeader
 
                 HStack(spacing: 6) {
                     pointButton(.home, color: .cyan)
                     pointButton(.away, color: .orange)
                 }
 
-                HStack {
-                    Button { store.undo() } label: {
-                        Image(systemName: "arrow.uturn.backward")
-                            .font(.headline.bold())
-                            .frame(width: 42, height: 42)
-                    }
-                    .buttonStyle(.bordered)
-                    .disabled(match.history.isEmpty)
-                    Text(match.decidingPointLabel ?? (match.isTieBreak ? "TIE-BREAK" : match.receivingSide))
-                        .font(.caption2).foregroundStyle(.secondary)
+                Button { store.undo() } label: {
+                    Label("GERİ AL", systemImage: "arrow.uturn.backward")
+                        .font(.system(size: 11, weight: .bold))
+                        .frame(maxWidth: .infinity, minHeight: 38)
+                        .background(.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 12))
+                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(.white.opacity(0.18)))
                 }
+                .buttonStyle(.plain)
+                .disabled(match.history.isEmpty)
+                .opacity(match.history.isEmpty ? 0.45 : 1)
 
                 healthGrid
             }
@@ -91,6 +86,27 @@ private struct WatchMatchView: View {
         }
     }
 
+    private var scoreHeader: some View {
+        HStack(spacing: 6) {
+            scoreSummary(title: "SETLER", value: "\(match.homeSets)–\(match.awaySets)")
+            scoreSummary(title: "OYUNLAR · S\(match.completedSets.count + 1)",
+                         value: "\(match.currentSet.homeGames)–\(match.currentSet.awayGames)")
+        }
+    }
+
+    private func scoreSummary(title: String, value: String) -> some View {
+        VStack(spacing: 1) {
+            Text(title)
+                .font(.system(size: 8, weight: .bold))
+                .foregroundStyle(.secondary)
+            Text(value)
+                .font(.system(size: 17, weight: .black, design: .rounded))
+        }
+        .frame(maxWidth: .infinity, minHeight: 39)
+        .background(.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 10))
+        .overlay(RoundedRectangle(cornerRadius: 10).stroke(.white.opacity(0.1)))
+    }
+
     private var healthGrid: some View {
         LazyVGrid(columns: [.init(.flexible()), .init(.flexible())], spacing: 5) {
             metric("flame.fill", "\(Int(workout.metrics.activeCalories)) kcal", .orange)
@@ -111,15 +127,23 @@ private struct WatchMatchView: View {
 
     private func pointButton(_ team: Team, color: Color) -> some View {
         Button { store.awardPoint(to: team) } label: {
-            VStack(spacing: 4) {
-                Text(team == .home ? "TAKIM A" : "TAKIM B").font(.caption2.bold())
+            VStack(spacing: 0) {
+                Text(team == .home ? "TAKIM A" : "TAKIM B")
+                    .font(.system(size: 9, weight: .black))
+                    .padding(.top, 9)
+                Spacer(minLength: 2)
                 Text(match.pointLabel(for: team))
                     .font(.system(size: 42, weight: .black, design: .rounded))
-                playerRow(name: team == .home ? match.home.first : match.away.first,
-                          index: team == .home ? 0 : 1)
-                playerRow(name: team == .home ? match.home.second : match.away.second,
-                          index: team == .home ? 2 : 3)
-            }.frame(maxWidth: .infinity, minHeight: 116)
+                Spacer(minLength: 3)
+                VStack(spacing: 3) {
+                    playerRow(name: team == .home ? match.home.first : match.away.first,
+                              index: team == .home ? 0 : 1)
+                    playerRow(name: team == .home ? match.home.second : match.away.second,
+                              index: team == .home ? 2 : 3)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.bottom, 9)
+            }.frame(maxWidth: .infinity, minHeight: 126)
         }
         .buttonStyle(.plain)
         .background(color.opacity(0.18), in: RoundedRectangle(cornerRadius: 14))
@@ -131,7 +155,7 @@ private struct WatchMatchView: View {
             if match.serverIndex == index {
                 Image(systemName: "tennisball.fill")
                     .font(.system(size: 8))
-                    .foregroundStyle(.yellow)
+                    .foregroundStyle(.green)
             }
             Text(name).lineLimit(1).minimumScaleFactor(0.65)
         }
