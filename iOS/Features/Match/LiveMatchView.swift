@@ -86,9 +86,15 @@ struct LiveMatchView: View {
 
     private func infoStrip(_ match: PadelMatch) -> some View {
         HStack {
-            Label(match.currentServerName, systemImage: "figure.padel")
+            VStack(alignment: .leading, spacing: 2) {
+                Text("SERVİS").font(.caption2).foregroundStyle(.secondary)
+                Label("\(match.currentServerName) · \(match.currentServerTeam == .home ? "Takım A" : "Takım B")", systemImage: "figure.padel")
+            }
             Spacer()
-            Text(match.isTieBreak ? "TIE-BREAK" : match.receivingSide)
+            VStack(alignment: .trailing, spacing: 2) {
+                Text(match.decidingPointLabel ?? (match.isTieBreak ? "TIE-BREAK" : match.receivingSide))
+                if match.isDecidingPoint { Text("Karşılayan taraf seçer").font(.caption2).foregroundStyle(.secondary) }
+            }
         }
         .font(.subheadline.bold()).padding()
         .background(.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 16))

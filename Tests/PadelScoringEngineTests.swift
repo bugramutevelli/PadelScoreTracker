@@ -1,5 +1,5 @@
 import XCTest
-@testable import RalliPadel
+@testable import PadelScoreTracker
 
 final class PadelScoringEngineTests: XCTestCase {
     func testAdvantageGameRequiresTwoPointLead() {
@@ -22,6 +22,24 @@ final class PadelScoringEngineTests: XCTestCase {
         repeatPoint(.away, 3, in: &match)
         PadelScoringEngine.awardPoint(to: .away, in: &match)
         XCTAssertEqual(match.currentSet.awayGames, 1)
+    }
+
+    func testStarPointEndsGameAfterTwoUnresolvedAdvantages() {
+        var match = PadelMatch(rule: .starPoint)
+        repeatPoint(.home, 3, in: &match)
+        repeatPoint(.away, 3, in: &match)
+        PadelScoringEngine.awardPoint(to: .home, in: &match)
+        PadelScoringEngine.awardPoint(to: .away, in: &match)
+        PadelScoringEngine.awardPoint(to: .away, in: &match)
+        PadelScoringEngine.awardPoint(to: .home, in: &match)
+
+        XCTAssertTrue(match.isDecidingPoint)
+        XCTAssertEqual(match.decidingPointLabel, "STAR POINT")
+
+        PadelScoringEngine.awardPoint(to: .away, in: &match)
+        XCTAssertEqual(match.currentSet.awayGames, 1)
+        XCTAssertEqual(match.homePoints, 0)
+        XCTAssertEqual(match.awayPoints, 0)
     }
 
     func testTieBreakStartsAtSixAllAndEndsSevenFive() {
@@ -50,6 +68,40 @@ final class PadelScoringEngineTests: XCTestCase {
         XCTAssertEqual(match.serverIndex, 0)
     }
 
+    func testMiniSetStartsTieBreakAtFourAll() {
+        var match = PadelMatch(format: .miniSets)
+        for game in 0..<8 { winGame(game.isMultiple(of: 2) ? .home : .away, in: &match) }
+        XCTAssertTrue(match.isTieBreak)
+        XCTAssertEqual(match.currentSet.homeGames, 4)
+        XCTAssertEqual(match.currentSet.awayGames, 4)
+    }
+
+    func testSuperTieBreakReplacesThirdSet() {
+        var match = PadelMatch(format: .superTieBreak)
+        for _ in 0..<6 { winGame(.home, in: &match) }
+        for _ in 0..<6 { winGame(.away, in: &match) }
+
+        XCTAssertTrue(match.isMatchTieBreak)
+        repeatPoint(.home, 10, in: &match)
+        XCTAssertEqual(match.winner, .home)
+        XCTAssertEqual(match.completedSets.last?.homeTieBreak, 10)
+    }
+
+    func testAdvantageFinalSetContinuesPastSixAll() {
+        var match = PadelMatch(format: .advantageFinalSet)
+        for _ in 0..<6 { winGame(.home, in: &match) }
+        for _ in 0..<6 { winGame(.away, in: &match) }
+        for game in 0..<12 { winGame(game.isMultiple(of: 2) ? .home : .away, in: &match) }
+
+        XCTAssertFalse(match.isTieBreak)
+        XCTAssertEqual(match.currentSet.homeGames, 6)
+        XCTAssertEqual(match.currentSet.awayGames, 6)
+
+        winGame(.home, in: &match)
+        winGame(.home, in: &match)
+        XCTAssertEqual(match.winner, .home)
+    }
+
     private func repeatPoint(_ team: Team, _ count: Int, in match: inout PadelMatch) {
         for _ in 0..<count { PadelScoringEngine.awardPoint(to: team, in: &match) }
     }
@@ -58,4 +110,3 @@ final class PadelScoringEngineTests: XCTestCase {
         repeatPoint(team, 4, in: &match)
     }
 }
-

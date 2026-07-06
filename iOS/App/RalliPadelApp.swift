@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct RalliPadelApp: App {
+struct PadelScoreTrackerApp: App {
     @StateObject private var store = MatchStore()
 
     var body: some Scene {
@@ -16,4 +16,3 @@ struct RalliPadelApp: App {
 private extension ShapeStyle where Self == Color {
     static var lime: Color { Color(red: 0.75, green: 0.96, blue: 0.25) }
 }
-

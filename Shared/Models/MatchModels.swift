@@ -10,19 +10,65 @@ enum Team: Int, Codable, CaseIterable, Identifiable, Sendable {
 
 enum ScoringRule: String, Codable, CaseIterable, Identifiable, Sendable {
     case advantage
+    case starPoint
     case goldenPoint
 
     var id: String { rawValue }
-    var title: String { self == .advantage ? "Avantaj" : "Altın puan" }
+    var title: String {
+        switch self {
+        case .advantage: "Klasik avantaj"
+        case .starPoint: "Star Point"
+        case .goldenPoint: "Golden Point"
+        }
+    }
+
+    var explanation: String {
+        switch self {
+        case .advantage: "Deuce sonrası iki puan fark oluşana kadar devam eder."
+        case .starPoint: "İki avantaj döngüsü sonuçlanmazsa üçüncü deuce’de tek karar puanı oynanır."
+        case .goldenPoint: "İlk deuce’de oynanan tek karar puanı oyunu kazandırır."
+        }
+    }
 }
 
 enum MatchFormat: String, Codable, CaseIterable, Identifiable, Sendable {
     case bestOfThree
     case singleSet
+    case miniSets
+    case advantageFinalSet
+    case matchTieBreak
+    case superTieBreak
 
     var id: String { rawValue }
-    var title: String { self == .bestOfThree ? "3 set üzerinden" : "Tek set" }
-    var setsToWin: Int { self == .bestOfThree ? 2 : 1 }
+    var title: String {
+        switch self {
+        case .bestOfThree: "3 set üzerinden"
+        case .singleSet: "Tek set"
+        case .miniSets: "Mini setler"
+        case .advantageFinalSet: "3. set: Avantaj seti"
+        case .matchTieBreak: "3. set: Match tie-break"
+        case .superTieBreak: "3. set: Super tie-break"
+        }
+    }
+    var setsToWin: Int { self == .singleSet ? 1 : 2 }
+    var gamesToWinSet: Int { self == .miniSets ? 4 : 6 }
+    var decidingTieBreakTarget: Int? {
+        switch self {
+        case .matchTieBreak: 7
+        case .superTieBreak: 10
+        default: nil
+        }
+    }
+    var explanation: String {
+        switch self {
+        case .bestOfThree: "İki set kazanan maçı alır; 6-6'da tie-break oynanır."
+        case .singleSet: "Tek standart set oynanır."
+        case .miniSets: "Setler 4 oyuna oynanır; 4-4'te tie-break yapılır."
+        case .advantageFinalSet: "Üçüncü sette 6-6'dan sonra tie-break yoktur; iki oyun fark gerekir."
+        case .matchTieBreak: "Setler 1-1 olursa üçüncü set yerine 7 puanlık tie-break oynanır."
+        case .superTieBreak: "Setler 1-1 olursa üçüncü set yerine 10 puanlık super tie-break oynanır."
+        }
+    }
 }
 
 struct TeamPlayers: Codable, Equatable, Sendable {
@@ -82,8 +128,9 @@ struct PadelMatch: Codable, Identifiable, Equatable, Sendable {
     func pointLabel(for team: Team) -> String {
         let value = team == .home ? homePoints : awayPoints
         if isTieBreak { return String(value) }
+        if rule == .starPoint, isDecidingPoint { return "★" }
         let other = team == .home ? awayPoints : homePoints
-        if rule == .advantage, value >= 3, other >= 3 {
+        if rule != .goldenPoint, value >= 3, other >= 3 {
             if value == other { return "40" }
             return value > other ? "AV" : "40"
         }
@@ -100,5 +147,24 @@ struct PadelMatch: Codable, Identifiable, Equatable, Sendable {
     var receivingSide: String {
         (homePoints + awayPoints).isMultiple(of: 2) ? "Sağ taraf" : "Sol taraf"
     }
-}
 
+    var isDecidingPoint: Bool {
+        guard !isTieBreak, homePoints == awayPoints else { return false }
+        switch rule {
+        case .advantage: false
+        case .goldenPoint: homePoints == 3
+        case .starPoint: homePoints >= 5
+        }
+    }
+
+    var isMatchTieBreak: Bool {
+        isTieBreak && currentSet.homeGames == 0 && currentSet.awayGames == 0 &&
+        completedSets.count == 2 && homeSets == 1 && awaySets == 1 &&
+        format.decidingTieBreakTarget != nil
+    }
+
+    var decidingPointLabel: String? {
+        guard isDecidingPoint else { return nil }
+        return rule == .starPoint ? "STAR POINT" : "GOLDEN POINT"
+    }
+}

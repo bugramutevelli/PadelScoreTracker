@@ -1,14 +1,27 @@
-# Ralli Padel
+# Padel Score Tracker
 
-Ralli, iPhone ve Apple Watch için özgün bir padel skor takip uygulamasıdır. İlk MVP; klasik/altın puan skoru, tie-break, servis rotasyonu, geri alma, maç geçmişi ve cihazlar arası canlı senkronizasyon içerir.
+Padel Score Tracker, iPhone ve Apple Watch için özgün bir padel skor takip uygulamasıdır. İlk MVP; klasik/altın puan skoru, tie-break, servis rotasyonu, geri alma, maç geçmişi ve cihazlar arası canlı senkronizasyon içerir.
+
+## Puanlama modları
+
+- **Klasik avantaj:** 40-40 sonrasında bir takım art arda iki puan alana kadar oyun sürer.
+- **Star Point (FIP 2026):** İlk iki avantaj döngüsü sonuçlanmazsa üçüncü deuce'de tek karar puanı oynanır.
+- **Golden Point:** İlk 40-40 durumunda tek karar puanı oynanır.
+
+## Maç formatları
+
+- **3 set üzerinden:** İki set kazanan maçı alır; standart sette 6-6'da tie-break oynanır.
+- **Tek set:** Bir standart set sonucu maçı belirler.
+- **Mini setler:** Setler 4 oyuna oynanır; 4-4'te tie-break yapılır.
+- **Avantaj final seti:** Üçüncü sette 6-6'dan sonra tie-break oynanmaz; iki oyun fark oluşana kadar sürer.
+- **Match tie-break:** Setler 1-1 olursa üçüncü set yerine 7 puanlık, iki farkla biten tie-break oynanır.
+- **Super tie-break:** Setler 1-1 olursa üçüncü set yerine 10 puanlık, iki farkla biten tie-break oynanır.
 
 ## Windows arayüz önizlemesi
 
 `Preview/index.html` dosyasını çift tıklayarak etkileşimli iPhone ve Apple Watch arayüzünü tarayıcıda açabilirsiniz. Bu önizleme görsel/etkileşim kontrolü içindir; gerçek SwiftUI uygulaması Xcode üzerinde çalışır.
 
 Apple Watch ekranını büyük ve etkileşimli görmek için `Preview/watch.html` dosyasını açın.
-
-![Ralli Windows önizlemesi](Preview/ralli-preview.png)
 
 ## Projeyi açma
 
@@ -17,9 +30,9 @@ Bu depo, Xcode proje dosyasını tekrarlanabilir biçimde üretmek için XcodeGe
 1. macOS üzerinde Xcode 16 veya üzerini kurun.
 2. `brew install xcodegen` komutuyla XcodeGen'i kurun.
 3. Proje klasöründe `xcodegen generate` çalıştırın.
-4. Oluşan `RalliPadel.xcodeproj` dosyasını Xcode ile açın.
+4. Oluşan `PadelScoreTracker.xcodeproj` dosyasını Xcode ile açın.
 5. iPhone hedefi ve Watch hedefi için kendi Apple Developer takımınızı seçin.
-6. `RalliPadel` şemasını bir iPhone + eşlenmiş Apple Watch simülatöründe çalıştırın.
+6. `PadelScoreTracker` şemasını bir iPhone + eşlenmiş Apple Watch simülatöründe çalıştırın.
 
 ## Mimari
 

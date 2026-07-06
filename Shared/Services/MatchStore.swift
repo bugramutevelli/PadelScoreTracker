@@ -7,6 +7,7 @@ final class MatchStore: ObservableObject {
     @Published var activeMatch: PadelMatch?
 
     private let fileURL: URL
+    private let activeFileURL: URL
     private let sync = WatchSessionCoordinator.shared
 
     init(fileURL: URL? = nil) {
@@ -14,14 +15,16 @@ final class MatchStore: ObservableObject {
         let directory = base.appendingPathComponent("RalliPadel", isDirectory: true)
         try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         self.fileURL = fileURL ?? directory.appendingPathComponent("matches.json")
+        self.activeFileURL = directory.appendingPathComponent("active-match.json")
         load()
         sync.onMatchReceived = { [weak self] match in
             Task { @MainActor in self?.acceptRemote(match) }
         }
     }
 
-    func start(home: TeamPlayers, away: TeamPlayers, rule: ScoringRule, format: MatchFormat) {
-        activeMatch = PadelMatch(home: home, away: away, rule: rule, format: format)
+    func start(home: TeamPlayers, away: TeamPlayers, rule: ScoringRule, format: MatchFormat, firstServerIndex: Int) {
+        activeMatch = PadelMatch(home: home, away: away, rule: rule, format: format, serverIndex: firstServerIndex)
+        saveActive()
         broadcast()
     }
 
@@ -37,6 +40,7 @@ final class MatchStore: ObservableObject {
         guard var match = activeMatch else { return }
         PadelScoringEngine.undo(in: &match)
         activeMatch = match
+        saveActive()
         broadcast()
     }
 
@@ -45,6 +49,7 @@ final class MatchStore: ObservableObject {
         match.endedAt = Date()
         archive(match)
         activeMatch = nil
+        clearActive()
         sync.clearMatch()
     }
 
@@ -52,6 +57,7 @@ final class MatchStore: ObservableObject {
         guard let match = activeMatch, match.isFinished else { return }
         archive(match)
         activeMatch = nil
+        clearActive()
         sync.clearMatch()
     }
 
@@ -61,6 +67,7 @@ final class MatchStore: ObservableObject {
     }
 
     private func persistActiveIfNeeded() {
+        saveActive()
         guard let match = activeMatch, match.isFinished else { return }
         archive(match)
     }
@@ -83,13 +90,27 @@ final class MatchStore: ObservableObject {
     }
 
     private func load() {
-        guard let data = try? Data(contentsOf: fileURL),
-              let decoded = try? JSONDecoder().decode([PadelMatch].self, from: data) else { return }
-        matches = decoded
+        if let data = try? Data(contentsOf: fileURL),
+           let decoded = try? JSONDecoder().decode([PadelMatch].self, from: data) {
+            matches = decoded
+        }
+        if let data = try? Data(contentsOf: activeFileURL),
+           let decoded = try? JSONDecoder().decode(PadelMatch.self, from: data) {
+            activeMatch = decoded
+        }
     }
 
     private func save() {
         guard let data = try? JSONEncoder().encode(matches) else { return }
         try? data.write(to: fileURL, options: .atomic)
+    }
+
+    private func saveActive() {
+        guard let activeMatch, let data = try? JSONEncoder().encode(activeMatch) else { return }
+        try? data.write(to: activeFileURL, options: .atomic)
+    }
+
+    private func clearActive() {
+        try? FileManager.default.removeItem(at: activeFileURL)
     }
 }

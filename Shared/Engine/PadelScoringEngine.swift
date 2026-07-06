@@ -10,12 +10,19 @@ enum PadelScoringEngine {
             return
         }
 
+        if match.isDecidingPoint {
+            completeGame(for: team, in: &match)
+            return
+        }
+
         if team == .home { match.homePoints += 1 } else { match.awayPoints += 1 }
         let ours = team == .home ? match.homePoints : match.awayPoints
         let theirs = team == .home ? match.awayPoints : match.homePoints
         let gameWon: Bool
         switch match.rule {
         case .advantage:
+            gameWon = ours >= 4 && ours - theirs >= 2
+        case .starPoint:
             gameWon = ours >= 4 && ours - theirs >= 2
         case .goldenPoint:
             gameWon = ours >= 4
@@ -44,9 +51,11 @@ enum PadelScoringEngine {
 
         let ours = team == .home ? match.currentSet.homeGames : match.currentSet.awayGames
         let theirs = team == .home ? match.currentSet.awayGames : match.currentSet.homeGames
-        if ours >= 6 && ours - theirs >= 2 {
+        let gamesToWin = match.format.gamesToWinSet
+        if ours >= gamesToWin && ours - theirs >= 2 {
             completeSet(for: team, in: &match)
-        } else if match.currentSet.homeGames == 6 && match.currentSet.awayGames == 6 {
+        } else if match.currentSet.homeGames == gamesToWin && match.currentSet.awayGames == gamesToWin &&
+                    !(match.format == .advantageFinalSet && match.completedSets.count == 2) {
             match.isTieBreak = true
             match.tieBreakPointsPlayed = 0
         }
@@ -61,10 +70,16 @@ enum PadelScoringEngine {
 
         let ours = team == .home ? match.homePoints : match.awayPoints
         let theirs = team == .home ? match.awayPoints : match.homePoints
-        if ours >= 7 && ours - theirs >= 2 {
+        let target = match.isMatchTieBreak ? (match.format.decidingTieBreakTarget ?? 7) : 7
+        if ours >= target && ours - theirs >= 2 {
             match.currentSet.homeTieBreak = match.homePoints
             match.currentSet.awayTieBreak = match.awayPoints
-            if team == .home { match.currentSet.homeGames = 7 } else { match.currentSet.awayGames = 7 }
+            if match.isMatchTieBreak {
+                if team == .home { match.currentSet.homeGames = 1 } else { match.currentSet.awayGames = 1 }
+            } else {
+                let tieBreakSetGames = match.format.gamesToWinSet + 1
+                if team == .home { match.currentSet.homeGames = tieBreakSetGames } else { match.currentSet.awayGames = tieBreakSetGames }
+            }
             completeSet(for: team, in: &match)
         }
     }
@@ -81,6 +96,10 @@ enum PadelScoringEngine {
         if wonSets >= match.format.setsToWin {
             match.winner = team
             match.endedAt = Date()
+        } else if match.completedSets.count == 2,
+                  match.homeSets == match.awaySets,
+                  match.format.decidingTieBreakTarget != nil {
+            match.isTieBreak = true
         }
     }
 

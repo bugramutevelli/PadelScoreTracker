@@ -1,4 +1,4 @@
-name: RalliPadel
+name: PadelScoreTracker
 options:
   bundleIdPrefix: com.rallipadel
   deploymentTarget:
@@ -10,7 +10,7 @@ settings:
     MARKETING_VERSION: 0.1.0
     CURRENT_PROJECT_VERSION: 1
 targets:
-  RalliPadel:
+  PadelScoreTracker:
     type: application
     platform: iOS
     sources:
@@ -19,16 +19,16 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.rallipadel.ios
-        PRODUCT_NAME: Ralli Padel
-        INFOPLIST_KEY_CFBundleDisplayName: Ralli Padel
+        PRODUCT_NAME: Padel Score Tracker
+        INFOPLIST_KEY_CFBundleDisplayName: Padel Score Tracker
         INFOPLIST_KEY_UILaunchScreen_Generation: true
         INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: true
         GENERATE_INFOPLIST_FILE: true
         CODE_SIGN_STYLE: Automatic
     dependencies:
-      - target: RalliWatchApp
+      - target: PadelScoreTrackerWatch
         embed: true
-  RalliWatchApp:
+  PadelScoreTrackerWatch:
     type: application
     platform: watchOS
     sources:
@@ -37,29 +37,29 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.rallipadel.ios.watchkitapp
-        PRODUCT_NAME: Ralli
-        INFOPLIST_KEY_CFBundleDisplayName: Ralli
+        PRODUCT_NAME: Padel Score
+        INFOPLIST_KEY_CFBundleDisplayName: Padel Score
         INFOPLIST_KEY_WKCompanionAppBundleIdentifier: com.rallipadel.ios
         GENERATE_INFOPLIST_FILE: true
         CODE_SIGN_STYLE: Automatic
-  RalliPadelTests:
+  PadelScoreTrackerTests:
     type: bundle.unit-test
     platform: iOS
     sources:
       - path: Tests
     dependencies:
-      - target: RalliPadel
+      - target: PadelScoreTracker
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.rallipadel.tests
         GENERATE_INFOPLIST_FILE: true
 schemes:
-  RalliPadel:
+  PadelScoreTracker:
     build:
       targets:
-        RalliPadel: all
-        RalliWatchApp: all
-        RalliPadelTests: [test]
+        PadelScoreTracker: all
+        PadelScoreTrackerWatch: all
+        PadelScoreTrackerTests: [test]
     test:
       targets:
-        - RalliPadelTests
+        - PadelScoreTrackerTests

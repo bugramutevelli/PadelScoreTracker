@@ -6,6 +6,7 @@ struct HomeView: View {
     @State private var away = TeamPlayers.awayDefault
     @State private var rule: ScoringRule = .advantage
     @State private var format: MatchFormat = .bestOfThree
+    @State private var firstServerIndex = 0
 
     var body: some View {
         ScrollView {
@@ -16,16 +17,29 @@ struct HomeView: View {
 
                 VStack(alignment: .leading, spacing: 12) {
                     Text("MAÇ AYARLARI").font(.caption.bold()).foregroundStyle(.secondary)
-                    Picker("Format", selection: $format) {
-                        ForEach(MatchFormat.allCases) { Text($0.title).tag($0) }
-                    }.pickerStyle(.segmented)
-                    Picker("Skor", selection: $rule) {
-                        ForEach(ScoringRule.allCases) { Text($0.title).tag($0) }
-                    }.pickerStyle(.segmented)
+                    settingRow(title: "Maç formatı", value: format.title) {
+                        Picker("Maç formatı", selection: $format) {
+                            ForEach(MatchFormat.allCases) { Text($0.title).tag($0) }
+                        }
+                    }
+                    Text(format.explanation).font(.caption).foregroundStyle(.secondary)
+                    settingRow(title: "Puanlama", value: rule.title) {
+                        Picker("Puanlama", selection: $rule) {
+                            ForEach(ScoringRule.allCases) { Text($0.title).tag($0) }
+                        }
+                    }
+                    Text(rule.explanation).font(.caption).foregroundStyle(.secondary)
+                    settingRow(title: "İlk servis", value: serverNames[firstServerIndex]) {
+                        Picker("İlk servis", selection: $firstServerIndex) {
+                            ForEach(serverNames.indices, id: \.self) { index in
+                                Text(serverNames[index]).tag(index)
+                            }
+                        }
+                    }
                 }
 
                 Button {
-                    store.start(home: home, away: away, rule: rule, format: format)
+                    store.start(home: home, away: away, rule: rule, format: format, firstServerIndex: firstServerIndex)
                 } label: {
                     Label("Maçı Başlat", systemImage: "play.fill")
                         .font(.headline)
@@ -37,8 +51,23 @@ struct HomeView: View {
             }
             .padding()
         }
-        .navigationTitle("Ralli")
+        .navigationTitle("Padel Score")
         .background(Color(.systemGroupedBackground))
+    }
+
+    private var serverNames: [String] { [home.first, away.first, home.second, away.second] }
+
+    private func settingRow<Content: View>(title: String, value: String, @ViewBuilder control: () -> Content) -> some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title).font(.caption).foregroundStyle(.secondary)
+                Text(value).font(.subheadline.bold())
+            }
+            Spacer()
+            control().labelsHidden().pickerStyle(.menu)
+        }
+        .padding(12)
+        .background(.background, in: RoundedRectangle(cornerRadius: 14))
     }
 
     private var hero: some View {
@@ -59,6 +88,7 @@ struct HomeView: View {
     private func teamCard(title: String, players: Binding<TeamPlayers>, color: Color) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title).font(.caption.bold()).foregroundStyle(color)
+            Text(players.wrappedValue.displayName).font(.headline).lineLimit(1)
             TextField("Birinci oyuncu", text: players.first)
             Divider()
             TextField("İkinci oyuncu", text: players.second)
@@ -68,4 +98,3 @@ struct HomeView: View {
         .background(.background, in: RoundedRectangle(cornerRadius: 18))
     }
 }
-
