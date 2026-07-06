@@ -160,9 +160,9 @@ struct PadelMatch: Codable, Identifiable, Equatable, Sendable {
     var isDecidingPoint: Bool {
         guard !isTieBreak, homePoints == awayPoints else { return false }
         switch rule {
-        case .advantage: false
-        case .goldenPoint: homePoints == 3
-        case .starPoint: homePoints >= 5
+        case .advantage: return false
+        case .goldenPoint: return homePoints == 3
+        case .starPoint: return homePoints >= 5
         }
     }
 

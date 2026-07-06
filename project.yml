@@ -19,7 +19,8 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.rallipadel.ios
-        PRODUCT_NAME: Padel Score Tracker
+        PRODUCT_NAME: PadelScoreTracker
+        PRODUCT_MODULE_NAME: PadelScoreTracker
         INFOPLIST_KEY_CFBundleDisplayName: Padel Score Tracker
         INFOPLIST_KEY_UILaunchScreen_Generation: true
         INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: true

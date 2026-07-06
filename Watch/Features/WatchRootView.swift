@@ -203,7 +203,7 @@ private struct WatchMatchView: View {
     private func playerRow(name: String, index: Int) -> some View {
         let isServing = match.serverIndex == index
 
-        HStack(spacing: 3) {
+        return HStack(spacing: 3) {
             if isServing {
                 Image("TennisBallIcon")
                     .resizable()
