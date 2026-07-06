@@ -193,7 +193,7 @@ private struct WatchMatchView: View {
                               index: team == .home ? 2 : 3)
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.top, 10)
+                .padding(.top, 14)
                 .padding(.bottom, 8)
             }.frame(maxWidth: .infinity, minHeight: 146)
         }
