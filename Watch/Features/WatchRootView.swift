@@ -69,7 +69,7 @@ private struct WatchMatchView: View {
     }
 
     private var scoreboardPage: some View {
-        VStack(spacing: 7) {
+        VStack(spacing: 12) {
             scoreHeader
 
             HStack(spacing: 6) {
@@ -193,9 +193,9 @@ private struct WatchMatchView: View {
                               index: team == .home ? 2 : 3)
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.top, 6)
-                .padding(.bottom, 7)
-            }.frame(maxWidth: .infinity, minHeight: 138)
+                .padding(.top, 10)
+                .padding(.bottom, 8)
+            }.frame(maxWidth: .infinity, minHeight: 146)
         }
         .buttonStyle(.plain)
         .background(color.opacity(0.18), in: RoundedRectangle(cornerRadius: 14))
