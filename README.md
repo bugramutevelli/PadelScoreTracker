@@ -2,6 +2,12 @@
 
 Ralli, iPhone ve Apple Watch için özgün bir padel skor takip uygulamasıdır. İlk MVP; klasik/altın puan skoru, tie-break, servis rotasyonu, geri alma, maç geçmişi ve cihazlar arası canlı senkronizasyon içerir.
 
+## Windows arayüz önizlemesi
+
+`Preview/index.html` dosyasını çift tıklayarak etkileşimli iPhone ve Apple Watch arayüzünü tarayıcıda açabilirsiniz. Bu önizleme görsel/etkileşim kontrolü içindir; gerçek SwiftUI uygulaması Xcode üzerinde çalışır.
+
+![Ralli Windows önizlemesi](Preview/ralli-preview.png)
+
 ## Projeyi açma
 
 Bu depo, Xcode proje dosyasını tekrarlanabilir biçimde üretmek için XcodeGen kullanır.
@@ -30,4 +36,3 @@ Bu depo, Xcode proje dosyasını tekrarlanabilir biçimde üretmek için XcodeGe
 - StoreKit 2 Pro paketi
 - Paylaşılabilir sonuç görseli
 - App Store ikonları, ekran görüntüleri ve gizlilik metni
-

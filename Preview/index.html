@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Ralli Padel — Windows Önizleme</title>
+  <style>
+    :root{--bg:#080d18;--panel:#111a2a;--muted:#8290a8;--cyan:#22d3ee;--orange:#fb923c;--lime:#c8f43d;--line:#26324a}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 18% 15%,#172854 0,transparent 34%),radial-gradient(circle at 85% 80%,#143d45 0,transparent 30%),#060912;color:#f6f8fb;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;display:grid;place-items:center;padding:36px}
+    .stage{display:flex;align-items:center;gap:64px}.phone{width:390px;height:844px;border:10px solid #252b35;border-radius:52px;background:var(--bg);box-shadow:0 36px 90px #000b;overflow:hidden;position:relative}.island{position:absolute;z-index:5;top:10px;left:50%;translate:-50%;width:120px;height:32px;border-radius:20px;background:#020305}.screen{height:100%;padding:54px 18px 26px;overflow:auto}.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}.brand{font-size:30px;font-weight:850;letter-spacing:-1px}.tag{font-size:12px;color:var(--muted);font-weight:700}.hero{height:190px;border-radius:27px;padding:23px;display:flex;flex-direction:column;justify-content:flex-end;background:linear-gradient(135deg,#4238ca,#1476ca 58%,#12aeb9);position:relative;overflow:hidden}.hero:after{content:"";position:absolute;width:190px;height:190px;border:1px solid #ffffff2c;border-radius:50%;right:-55px;top:-65px}.hero b{font-size:31px;line-height:1.02;letter-spacing:-1.3px}.hero small{margin-top:10px;color:#dcecff}.section-title{margin:23px 3px 9px;color:var(--muted);font-size:11px;font-weight:800;letter-spacing:1.4px}.team{background:#111827;border:1px solid #202c42;border-radius:18px;padding:13px 16px;margin-bottom:10px}.team label{font-size:10px;font-weight:900}.team.a label{color:var(--cyan)}.team.b label{color:var(--orange)}.player{padding:8px 0;font-size:14px}.player+.player{border-top:1px solid #263147}.segments{display:flex;background:#111827;border-radius:12px;padding:3px;margin-bottom:8px}.segments span{flex:1;text-align:center;padding:8px 4px;font-size:11px;color:var(--muted);border-radius:9px}.segments .on{background:#27334a;color:white;font-weight:700}.start{width:100%;margin-top:17px;border:0;border-radius:17px;background:var(--lime);color:#132000;font-size:16px;font-weight:900;padding:16px;cursor:pointer}.hidden{display:none!important}
+    .live-head{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted)}.live-label{font-weight:900;color:white;letter-spacing:1px}.scoreboard{margin-top:34px;border-block:1px solid var(--line);padding:16px 0;display:grid;grid-template-columns:1fr 35px}.row{display:contents}.team-name{padding:8px 0;font-weight:700;font-size:14px}.games{text-align:center;padding:8px 0;font-size:20px;font-weight:850;color:var(--cyan)}.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}.tile{height:220px;border-radius:24px;border:1px solid;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;user-select:none}.tile.a{color:var(--cyan);background:#22d3ee18}.tile.b{color:var(--orange);background:#fb923c18}.tile small{font-weight:900}.tile strong{font-size:76px;line-height:1.1}.tile em{font-size:11px;font-style:normal;font-weight:800}.info{display:flex;justify-content:space-between;margin-top:13px;background:#ffffff0e;padding:15px;border-radius:15px;font-size:12px;font-weight:700}.actions{display:flex;gap:8px;margin-top:14px}.actions button{flex:1;padding:12px;border-radius:12px;border:1px solid var(--line);background:#111827;color:white;cursor:pointer}.actions .danger{color:#ff7070}.watch{width:230px;height:270px;background:#080a0f;border:10px solid #353a42;border-radius:62px;box-shadow:0 30px 70px #000a;padding:25px 16px;position:relative}.crown{position:absolute;right:-19px;top:64px;width:10px;height:45px;border-radius:5px;background:#444b56}.watch-top{display:flex;justify-content:space-between;font-size:10px;color:#a5afbf}.watch-score{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:17px}.wbtn{height:115px;border-radius:16px;border:1px solid;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer}.wbtn.a{color:var(--cyan);background:#22d3ee18}.wbtn.b{color:var(--orange);background:#fb923c18}.wbtn b{font-size:44px}.watch-note{text-align:center;font-size:10px;color:var(--muted);margin-top:10px}.hint{position:fixed;bottom:16px;color:#718098;font-size:12px}
+    @media(max-width:800px){body{padding:16px}.stage{transform:scale(.8);gap:20px}.watch{display:none}.hint{display:none}}
+  </style>
+</head>
+<body>
+  <main class="stage">
+    <section class="phone">
+      <div class="island"></div>
+      <div class="screen" id="setup">
+        <div class="top"><div class="brand">Ralli</div><div class="tag">OYNA</div></div>
+        <div class="hero"><b>Skor sende,<br>aklın oyunda.</b><small>iPhone ve Apple Watch birlikte çalışır.</small></div>
+        <div class="section-title">TAKIM A</div><div class="team a"><label>OYUNCULAR</label><div class="player">Buğra</div><div class="player">Oyuncu 2</div></div>
+        <div class="section-title">TAKIM B</div><div class="team b"><label>OYUNCULAR</label><div class="player">Oyuncu 3</div><div class="player">Oyuncu 4</div></div>
+        <div class="section-title">MAÇ AYARLARI</div><div class="segments"><span class="on">3 set üzerinden</span><span>Tek set</span></div><div class="segments"><span class="on">Avantaj</span><span>Altın puan</span></div>
+        <button class="start" onclick="startMatch()">▶ &nbsp; Maçı Başlat</button>
+      </div>
+      <div class="screen hidden" id="live">
+        <div class="live-head"><button onclick="resetMatch()" style="background:none;border:0;color:#ff6675">Bitir</button><span class="live-label">CANLI MAÇ</span><button onclick="undo()" style="background:none;border:0;color:white">↶</button></div>
+        <div class="scoreboard"><div class="row"><div class="team-name">Buğra & Oyuncu 2</div><div class="games" id="ga">0</div></div><div class="row"><div class="team-name">Oyuncu 3 & Oyuncu 4</div><div class="games" id="gb">0</div></div></div>
+        <div class="tiles"><div class="tile a" onclick="point('a')"><small>TAKIM A</small><strong id="pa">0</strong><em>⊕ PUAN EKLE</em></div><div class="tile b" onclick="point('b')"><small>TAKIM B</small><strong id="pb">0</strong><em>⊕ PUAN EKLE</em></div></div>
+        <div class="info"><span>🏓 Servis: <span id="server">Buğra</span></span><span id="side">Sağ taraf</span></div>
+        <div class="actions"><button onclick="undo()">↶ Geri al</button><button class="danger" onclick="resetMatch()">Maçı bitir</button></div>
+      </div>
+    </section>
+    <aside class="watch"><div class="crown"></div><div class="watch-top"><span id="wserver">🏓 Buğra</span><b><span id="wga">0</span>–<span id="wgb">0</span></b></div><div class="watch-score"><div class="wbtn a" onclick="point('a')"><small>A</small><b id="wpa">0</b></div><div class="wbtn b" onclick="point('b')"><small>B</small><b id="wpb">0</b></div></div><div class="watch-note">iPhone ile canlı eşzamanlı</div></aside>
+  </main>
+  <div class="hint">Takım kartlarına tıkla — skor iPhone ve Watch’ta birlikte ilerler.</div>
+  <script>
+    const labels=['0','15','30','40'];let s={a:0,b:0,ga:0,gb:0,server:0},history=[];const servers=['Buğra','Oyuncu 3','Oyuncu 2','Oyuncu 4'];
+    function startMatch(){document.querySelector('#setup').classList.add('hidden');document.querySelector('#live').classList.remove('hidden');render()}
+    function point(t){history.push({...s});s[t]++;let o=t==='a'?'b':'a';if(s[t]>=4&&s[t]-s[o]>=2){s['g'+t]++;s.a=s.b=0;s.server=(s.server+1)%4}render()}
+    function undo(){if(history.length)s=history.pop();render()}
+    function resetMatch(){s={a:0,b:0,ga:0,gb:0,server:0};history=[];document.querySelector('#live').classList.add('hidden');document.querySelector('#setup').classList.remove('hidden');render()}
+    function label(t){let o=t==='a'?'b':'a';if(s[t]>=3&&s[o]>=3){if(s[t]===s[o])return'40';return s[t]>s[o]?'AV':'40'}return labels[Math.min(s[t],3)]}
+    function render(){let a=label('a'),b=label('b');['pa','wpa'].forEach(id=>document.querySelector('#'+id).textContent=a);['pb','wpb'].forEach(id=>document.querySelector('#'+id).textContent=b);['ga','wga'].forEach(id=>document.querySelector('#'+id).textContent=s.ga);['gb','wgb'].forEach(id=>document.querySelector('#'+id).textContent=s.gb);document.querySelector('#server').textContent=servers[s.server];document.querySelector('#wserver').textContent='🏓 '+servers[s.server];document.querySelector('#side').textContent=(s.a+s.b)%2?'Sol taraf':'Sağ taraf'}
+    render();
+  </script>
+</body>
+</html>
