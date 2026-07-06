@@ -76,6 +76,7 @@ private struct WatchMatchView: View {
                 pointButton(.home, color: .cyan)
                 pointButton(.away, color: .orange)
             }
+            .frame(width: 174)
 
             Spacer(minLength: 0)
 
@@ -114,11 +115,11 @@ private struct WatchMatchView: View {
                 .font(.system(size: 8, weight: .black))
                 .foregroundStyle(.secondary)
             Text("\(match.homeSets)–\(match.awaySets)")
-                .font(.system(size: 22, weight: .black, design: .rounded))
+                .font(.system(size: 25, weight: .black, design: .rounded))
             Text(match.isTieBreak
                  ? "TIE-BREAK"
                  : "\(match.completedSets.count + 1). SET  ·  OYUN \(match.currentSet.homeGames)–\(match.currentSet.awayGames)")
-                .font(.system(size: 8, weight: .bold))
+                .font(.system(size: 9, weight: .bold))
                 .foregroundStyle(.secondary)
         }
     }
@@ -181,11 +182,10 @@ private struct WatchMatchView: View {
             VStack(spacing: 0) {
                 Text(team == .home ? "TAKIM A" : "TAKIM B")
                     .font(.system(size: 9, weight: .black))
-                    .padding(.top, 9)
-                Spacer(minLength: 2)
+                    .padding(.top, 8)
                 Text(match.pointLabel(for: team))
                     .font(.system(size: 42, weight: .black, design: .rounded))
-                Spacer(minLength: 3)
+                    .padding(.top, 7)
                 VStack(spacing: 3) {
                     playerRow(name: team == .home ? match.home.first : match.away.first,
                               index: team == .home ? 0 : 1)
@@ -193,8 +193,9 @@ private struct WatchMatchView: View {
                               index: team == .home ? 2 : 3)
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.bottom, 9)
-            }.frame(maxWidth: .infinity, minHeight: 150)
+                .padding(.top, 6)
+                .padding(.bottom, 7)
+            }.frame(maxWidth: .infinity, minHeight: 138)
         }
         .buttonStyle(.plain)
         .background(color.opacity(0.18), in: RoundedRectangle(cornerRadius: 14))
