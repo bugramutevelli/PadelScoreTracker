@@ -34,29 +34,11 @@ private struct WatchMatchView: View {
     let match: PadelMatch
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 8) {
-                scoreHeader
-
-                HStack(spacing: 6) {
-                    pointButton(.home, color: .cyan)
-                    pointButton(.away, color: .orange)
-                }
-
-                Button { store.undo() } label: {
-                    Label("GERİ AL", systemImage: "arrow.uturn.backward")
-                        .font(.system(size: 11, weight: .bold))
-                        .frame(maxWidth: .infinity, minHeight: 38)
-                        .background(.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 12))
-                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(.white.opacity(0.18)))
-                }
-                .buttonStyle(.plain)
-                .disabled(match.history.isEmpty)
-                .opacity(match.history.isEmpty ? 0.45 : 1)
-
-                healthGrid
-            }
+        TabView {
+            scoreboardPage
+            workoutPage
         }
+        .tabViewStyle(.page(indexDisplayMode: .never))
         .task {
             let authorized = await workout.requestAuthorization()
             if authorized && !workout.isRunning && !match.isFinished {
@@ -86,43 +68,102 @@ private struct WatchMatchView: View {
         }
     }
 
-    private var scoreHeader: some View {
-        HStack(spacing: 6) {
-            scoreSummary(title: "SETLER", value: "\(match.homeSets)–\(match.awaySets)")
-            scoreSummary(title: "OYUNLAR · S\(match.completedSets.count + 1)",
-                         value: "\(match.currentSet.homeGames)–\(match.currentSet.awayGames)")
-        }
-    }
+    private var scoreboardPage: some View {
+        VStack(spacing: 7) {
+            scoreHeader
 
-    private func scoreSummary(title: String, value: String) -> some View {
-        VStack(spacing: 1) {
-            Text(title)
+            HStack(spacing: 6) {
+                pointButton(.home, color: .cyan)
+                pointButton(.away, color: .orange)
+            }
+
+            Spacer(minLength: 0)
+
+            Button { store.undo() } label: {
+                Label("GERİ AL", systemImage: "arrow.uturn.backward")
+                    .font(.system(size: 11, weight: .bold))
+                    .frame(maxWidth: .infinity, minHeight: 40)
+                    .background(.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 12))
+                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(.white.opacity(0.18)))
+            }
+            .buttonStyle(.plain)
+            .disabled(match.history.isEmpty)
+            .opacity(match.history.isEmpty ? 0.45 : 1)
+        }
+        .overlay(alignment: .topTrailing) {
+            Image(systemName: "chevron.right")
                 .font(.system(size: 8, weight: .bold))
                 .foregroundStyle(.secondary)
+                .padding(.top, 12)
+        }
+    }
+
+    private var scoreHeader: some View {
+        VStack(spacing: 0) {
+            Text("SETLER")
+                .font(.system(size: 8, weight: .black))
+                .foregroundStyle(.secondary)
+            Text("\(match.homeSets)–\(match.awaySets)")
+                .font(.system(size: 22, weight: .black, design: .rounded))
+            Text(match.isTieBreak
+                 ? "TIE-BREAK"
+                 : "\(match.completedSets.count + 1). SET  ·  OYUN \(match.currentSet.homeGames)–\(match.currentSet.awayGames)")
+                .font(.system(size: 8, weight: .bold))
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private var workoutPage: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Text("PADEL")
+                    .font(.system(size: 11, weight: .black))
+                    .foregroundStyle(.green)
+                Spacer()
+                Image(systemName: "figure.tennis")
+                    .foregroundStyle(.green)
+            }
+
+            Text(workoutDuration)
+                .font(.system(size: 38, weight: .medium, design: .rounded))
+                .foregroundStyle(.yellow)
+                .monospacedDigit()
+
+            Divider().overlay(.white.opacity(0.16))
+
+            LazyVGrid(columns: [.init(.flexible(), alignment: .leading), .init(.flexible(), alignment: .leading)], spacing: 9) {
+                workoutMetric("AKTİF KALORİ", "\(Int(workout.metrics.activeCalories)) KCAL", .pink)
+                workoutMetric("NABIZ", "\(Int(workout.metrics.heartRate)) BPM", .red)
+                workoutMetric("MESAFE", String(format: "%.2f KM", workout.metrics.distanceMeters / 1000), .cyan)
+                workoutMetric("ADIM", "\(workout.metrics.steps)", .green)
+            }
+
+            Spacer(minLength: 0)
+
+            Text("Skora dönmek için sağa kaydır")
+                .font(.system(size: 8, weight: .medium))
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity)
+        }
+        .padding(.horizontal, 6)
+    }
+
+    private var workoutDuration: String {
+        let total = Int(workout.metrics.duration)
+        return String(format: "%02d:%02d", total / 60, total % 60)
+    }
+
+    private func workoutMetric(_ title: String, _ value: String, _ color: Color) -> some View {
+        VStack(alignment: .leading, spacing: 1) {
+            Text(title)
+                .font(.system(size: 7, weight: .bold))
+                .foregroundStyle(.secondary)
             Text(value)
-                .font(.system(size: 17, weight: .black, design: .rounded))
+                .font(.system(size: 13, weight: .bold, design: .rounded))
+                .foregroundStyle(color)
+                .minimumScaleFactor(0.65)
+                .lineLimit(1)
         }
-        .frame(maxWidth: .infinity, minHeight: 39)
-        .background(.white.opacity(0.07), in: RoundedRectangle(cornerRadius: 10))
-        .overlay(RoundedRectangle(cornerRadius: 10).stroke(.white.opacity(0.1)))
-    }
-
-    private var healthGrid: some View {
-        LazyVGrid(columns: [.init(.flexible()), .init(.flexible())], spacing: 5) {
-            metric("flame.fill", "\(Int(workout.metrics.activeCalories)) kcal", .orange)
-            metric("clock.fill", "\(Int(workout.metrics.duration) / 60) dk", .cyan)
-            metric("figure.walk", "\(workout.metrics.steps) adım", .green)
-            metric("location.fill", String(format: "%.2f km", workout.metrics.distanceMeters / 1000), .blue)
-        }
-    }
-
-    private func metric(_ icon: String, _ value: String, _ color: Color) -> some View {
-        Label(value, systemImage: icon)
-            .font(.system(size: 9, weight: .semibold))
-            .foregroundStyle(color)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 5)
-            .background(color.opacity(0.12), in: RoundedRectangle(cornerRadius: 7))
     }
 
     private func pointButton(_ team: Team, color: Color) -> some View {
@@ -143,7 +184,7 @@ private struct WatchMatchView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.bottom, 9)
-            }.frame(maxWidth: .infinity, minHeight: 126)
+            }.frame(maxWidth: .infinity, minHeight: 150)
         }
         .buttonStyle(.plain)
         .background(color.opacity(0.18), in: RoundedRectangle(cornerRadius: 14))
