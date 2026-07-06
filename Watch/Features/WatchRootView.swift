@@ -82,10 +82,18 @@ private struct WatchMatchView: View {
             Button { store.undo() } label: {
                 Label("Undo", systemImage: "arrow.counterclockwise")
                     .font(.system(size: 13, weight: .bold))
-                    .foregroundStyle(.black)
-                    .frame(maxWidth: .infinity, minHeight: 42)
-                    .background(Color(red: 0.64, green: 1, blue: 0.20), in: Capsule())
-                    .shadow(color: Color.green.opacity(0.28), radius: 4, y: 2)
+                    .foregroundStyle(.white)
+                    .frame(width: 132, height: 42)
+                    .background(
+                        LinearGradient(
+                            colors: [Color(red: 0.68, green: 0.33, blue: 0.96),
+                                     Color(red: 0.43, green: 0.20, blue: 0.88)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        in: Capsule()
+                    )
+                    .shadow(color: Color.purple.opacity(0.35), radius: 5, y: 2)
             }
             .buttonStyle(.plain)
             .disabled(match.history.isEmpty)
