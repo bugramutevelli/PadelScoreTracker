@@ -97,7 +97,7 @@ private struct WatchMatchView: View {
                     .overlay(Capsule().stroke(.white.opacity(0.16), lineWidth: 0.7))
                     .shadow(color: Color.purple.opacity(0.22), radius: 5, y: 2)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(WatchUndoButtonStyle())
             .disabled(match.history.isEmpty)
             .opacity(match.history.isEmpty ? 0.45 : 1)
         }
@@ -197,9 +197,7 @@ private struct WatchMatchView: View {
                 .padding(.bottom, 8)
             }.frame(maxWidth: .infinity, minHeight: 146)
         }
-        .buttonStyle(.plain)
-        .background(color.opacity(0.18), in: RoundedRectangle(cornerRadius: 14))
-        .foregroundStyle(color)
+        .buttonStyle(WatchScoreButtonStyle(color: color))
     }
 
     private func playerRow(name: String, index: Int) -> some View {
@@ -231,5 +229,34 @@ private struct WatchMatchView: View {
                 Capsule().stroke(Color(red: 0.74, green: 1, blue: 0.32).opacity(0.28), lineWidth: 0.7)
             }
         }
+    }
+}
+
+private struct WatchScoreButtonStyle: ButtonStyle {
+    let color: Color
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .foregroundStyle(color)
+            .background(
+                color.opacity(configuration.isPressed ? 0.34 : 0.18),
+                in: RoundedRectangle(cornerRadius: 14)
+            )
+            .scaleEffect(configuration.isPressed ? 1.035 : 1)
+            .shadow(
+                color: color.opacity(configuration.isPressed ? 0.24 : 0),
+                radius: configuration.isPressed ? 5 : 0
+            )
+            .animation(.easeOut(duration: 0.10), value: configuration.isPressed)
+    }
+}
+
+private struct WatchUndoButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.94 : 1)
+            .brightness(configuration.isPressed ? 0.08 : 0)
+            .opacity(configuration.isPressed ? 0.86 : 1)
+            .animation(.easeOut(duration: 0.10), value: configuration.isPressed)
     }
 }
