@@ -32,6 +32,18 @@ targets:
   PadelScoreTrackerWatch:
     type: application
     platform: watchOS
+    info:
+      path: Watch/Info.plist
+      properties:
+        CFBundleDisplayName: Padel Score
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        WKApplication: true
+        WKCompanionAppBundleIdentifier: com.rallipadel.ios
+        NSHealthShareUsageDescription: Padel antrenmanında kalori, nabız, adım ve mesafe bilgilerini göstermek için Sağlık verilerine erişilir.
+        NSHealthUpdateUsageDescription: Padel antrenmanını Apple Sağlık ve Fitness'a kaydetmek için izin gerekir.
+        WKBackgroundModes:
+          - workout-processing
     sources:
       - path: Shared
       - path: Watch
@@ -39,16 +51,12 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.rallipadel.ios.watchkitapp
         PRODUCT_NAME: Padel Score
-        INFOPLIST_KEY_CFBundleDisplayName: Padel Score
-        INFOPLIST_KEY_WKCompanionAppBundleIdentifier: com.rallipadel.ios
-        INFOPLIST_KEY_NSHealthShareUsageDescription: Padel antrenmanında kalori, nabız, adım ve mesafe bilgilerini göstermek için Sağlık verilerine erişilir.
-        INFOPLIST_KEY_NSHealthUpdateUsageDescription: Padel antrenmanını Apple Sağlık ve Fitness'a kaydetmek için izin gerekir.
-        GENERATE_INFOPLIST_FILE: true
         CODE_SIGN_STYLE: Automatic
     entitlements:
       path: Watch/PadelScoreTrackerWatch.entitlements
       properties:
         com.apple.developer.healthkit: true
+        com.apple.developer.healthkit.background-delivery: true
   PadelScoreTrackerTests:
     type: bundle.unit-test
     platform: iOS
