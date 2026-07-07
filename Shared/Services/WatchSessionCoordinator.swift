@@ -25,7 +25,7 @@ final class WatchSessionCoordinator: NSObject, ObservableObject, WCSessionDelega
         let payload: [String: Any] = ["match": data]
         try? WCSession.default.updateApplicationContext(payload)
         if WCSession.default.isReachable {
-            WCSession.default.sendMessage(payload, replyHandler: nil)
+            WCSession.default.sendMessage(payload, replyHandler: nil, errorHandler: nil)
         }
     }
 
@@ -34,7 +34,7 @@ final class WatchSessionCoordinator: NSObject, ObservableObject, WCSessionDelega
         let payload: [String: Any] = ["clear": true]
         try? WCSession.default.updateApplicationContext(payload)
         if WCSession.default.isReachable {
-            WCSession.default.sendMessage(payload, replyHandler: nil)
+            WCSession.default.sendMessage(payload, replyHandler: nil, errorHandler: nil)
         }
     }
 
@@ -42,7 +42,7 @@ final class WatchSessionCoordinator: NSObject, ObservableObject, WCSessionDelega
         guard WCSession.isSupported() else { return }
         let payload: [String: Any] = ["requestActiveMatch": true]
         if WCSession.default.isReachable {
-            WCSession.default.sendMessage(payload, replyHandler: nil)
+            WCSession.default.sendMessage(payload, replyHandler: nil, errorHandler: nil)
         } else {
             WCSession.default.transferUserInfo(payload)
         }
