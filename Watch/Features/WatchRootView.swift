@@ -260,3 +260,17 @@ private struct WatchUndoButtonStyle: ButtonStyle {
             .animation(.easeOut(duration: 0.10), value: configuration.isPressed)
     }
 }
+
+#Preview("Watch - Hazir") {
+    WatchRootView()
+        .environmentObject(MatchStore.preview())
+        .environmentObject(WorkoutManager.preview(running: false))
+        .previewDevice("Apple Watch Series 9 (45mm)")
+}
+
+#Preview("Watch - Mac") {
+    WatchRootView()
+        .environmentObject(MatchStore.preview(active: true, scored: true))
+        .environmentObject(WorkoutManager.preview())
+        .previewDevice("Apple Watch Series 9 (45mm)")
+}

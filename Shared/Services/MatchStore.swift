@@ -10,12 +10,12 @@ final class MatchStore: ObservableObject {
     private let activeFileURL: URL
     private let sync = WatchSessionCoordinator.shared
 
-    init(fileURL: URL? = nil) {
+    init(fileURL: URL? = nil, activeFileURL: URL? = nil) {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
         let directory = base.appendingPathComponent("RalliPadel", isDirectory: true)
         try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         self.fileURL = fileURL ?? directory.appendingPathComponent("matches.json")
-        self.activeFileURL = directory.appendingPathComponent("active-match.json")
+        self.activeFileURL = activeFileURL ?? directory.appendingPathComponent("active-match.json")
         load()
         sync.onMatchReceived = { [weak self] match in
             Task { @MainActor in self?.acceptRemote(match) }
@@ -122,3 +122,37 @@ final class MatchStore: ObservableObject {
         try? FileManager.default.removeItem(at: activeFileURL)
     }
 }
+
+#if DEBUG
+extension MatchStore {
+    static func preview(active: Bool = false, scored: Bool = false) -> MatchStore {
+        let directory = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent("RalliPadelPreviews", isDirectory: true)
+        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+
+        let id = UUID().uuidString
+        let store = MatchStore(
+            fileURL: directory.appendingPathComponent("matches-\(id).json"),
+            activeFileURL: directory.appendingPathComponent("active-match-\(id).json")
+        )
+
+        guard active else { return store }
+
+        store.start(
+            home: TeamPlayers(first: "Buğra", second: "Deniz"),
+            away: TeamPlayers(first: "Ece", second: "Mert"),
+            rule: .starPoint,
+            format: .bestOfThree,
+            firstServerIndex: 0
+        )
+
+        guard scored else { return store }
+
+        [.home, .away, .home, .home, .away, .home, .away, .away, .home].forEach {
+            store.awardPoint(to: $0)
+        }
+
+        return store
+    }
+}
+#endif

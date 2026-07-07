@@ -17,6 +17,9 @@ struct RootView: View {
             LiveMatchView()
                 .environmentObject(store)
         }
+        .tint(Color(red: 0.78, green: 0.96, blue: 0.24))
+        .toolbarBackground(Color(red: 0.03, green: 0.05, blue: 0.09), for: .tabBar)
+        .toolbarBackground(.visible, for: .tabBar)
+        .preferredColorScheme(.dark)
     }
 }
-

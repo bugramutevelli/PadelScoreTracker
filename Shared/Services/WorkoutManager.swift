@@ -163,4 +163,22 @@ extension WorkoutManager: HKLiveWorkoutBuilderDelegate {
         }
     }
 }
+
+#if DEBUG
+extension WorkoutManager {
+    static func preview(running: Bool = true) -> WorkoutManager {
+        let manager = WorkoutManager()
+        manager.isAuthorized = true
+        manager.isRunning = running
+        manager.metrics = WorkoutMetrics(
+            duration: 3258,
+            activeCalories: 286,
+            steps: 4218,
+            distanceMeters: 3140,
+            heartRate: 142
+        )
+        return manager
+    }
+}
+#endif
 #endif

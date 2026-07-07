@@ -7,117 +7,244 @@ struct LiveMatchView: View {
     var body: some View {
         NavigationStack {
             if let match = store.activeMatch {
-                VStack(spacing: 16) {
-                    header(match)
-                    sets(match)
-                    scorePanel(match)
-                    infoStrip(match)
+                VStack(spacing: 18) {
+                    topRow(match)
+                    scoreHeader(match)
+
+                    HStack(spacing: 12) {
+                        pointButton(.home, match: match, color: .cyan)
+                        pointButton(.away, match: match, color: .orange)
+                    }
+
                     Spacer(minLength: 0)
-                    controls(match)
+
+                    VStack(spacing: 10) {
+                        undoButton(match)
+                        finishButton
+                    }
                 }
-                .padding()
-                .background(Color(red: 0.035, green: 0.055, blue: 0.09).ignoresSafeArea())
+                .padding(.horizontal, 18)
+                .padding(.top, 18)
+                .padding(.bottom, 22)
+                .background(Color(red: 0.03, green: 0.05, blue: 0.09).ignoresSafeArea())
                 .foregroundStyle(.white)
-                .toolbar {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button("Bitir") { confirmFinish = true }.foregroundStyle(.red)
-                    }
-                    ToolbarItem(placement: .principal) { Text("CANLI MAÇ").font(.caption.bold()) }
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button { store.undo() } label: { Image(systemName: "arrow.uturn.backward") }
-                            .disabled(match.history.isEmpty)
-                    }
-                }
+                .toolbar(.hidden, for: .navigationBar)
                 .confirmationDialog("Maç bitirilsin mi?", isPresented: $confirmFinish) {
                     Button("Maçı Bitir", role: .destructive) { store.finishEarly() }
                 }
                 .overlay { if match.isFinished { winnerOverlay(match) } }
+                .preferredColorScheme(.dark)
             }
         }
     }
 
-    private func header(_ match: PadelMatch) -> some View {
+    private func topRow(_ match: PadelMatch) -> some View {
         HStack {
             Label("\(Int(match.workoutMetrics?.duration ?? match.duration) / 60) dk", systemImage: "timer")
-            if let health = match.workoutMetrics {
-                Label("\(Int(health.activeCalories)) kcal", systemImage: "flame.fill")
-            }
             Spacer()
-            Label("Watch eşzamanlı", systemImage: "applewatch").foregroundStyle(.green)
-        }.font(.caption)
+            Label("Watch eşzamanlı", systemImage: "applewatch")
+                .foregroundStyle(.green)
+        }
+        .font(.caption.bold())
+        .foregroundStyle(.secondary)
     }
 
-    private func sets(_ match: PadelMatch) -> some View {
-        HStack(spacing: 18) {
-            VStack(alignment: .leading, spacing: 12) {
-                Text(match.home.displayName).lineLimit(1)
-                Text(match.away.displayName).lineLimit(1)
-            }.font(.subheadline.bold()).frame(maxWidth: .infinity, alignment: .leading)
-            ForEach(Array(match.completedSets.enumerated()), id: \.offset) { index, set in
-                VStack(spacing: 12) {
-                    Text("\(set.homeGames)")
-                    Text("\(set.awayGames)")
-                }.overlay(alignment: .top) { Text("S\(index + 1)").font(.caption2).offset(y: -18) }
+    private func scoreHeader(_ match: PadelMatch) -> some View {
+        VStack(spacing: 10) {
+            Text("SET SKORU")
+                .font(.system(size: 16, weight: .black, design: .rounded))
+                .tracking(1.3)
+                .foregroundStyle(Color(red: 0.78, green: 0.96, blue: 0.24))
+
+            HStack(alignment: .firstTextBaseline, spacing: 14) {
+                Text("TAKIM A")
+                    .font(.system(size: 13, weight: .black, design: .rounded))
+                    .tracking(0.6)
+                    .foregroundStyle(.cyan)
+                Text("\(match.homeSets)")
+                    .font(.system(size: 44, weight: .black, design: .rounded))
+                    .monospacedDigit()
+                    .foregroundStyle(.cyan)
+                Text(":")
+                    .font(.system(size: 38, weight: .black, design: .rounded))
+                    .foregroundStyle(.white.opacity(0.84))
+                    .padding(.horizontal, 2)
+                Text("\(match.awaySets)")
+                    .font(.system(size: 44, weight: .black, design: .rounded))
+                    .monospacedDigit()
+                    .foregroundStyle(.orange)
+                Text("TAKIM B")
+                    .font(.system(size: 13, weight: .black, design: .rounded))
+                    .tracking(0.6)
+                    .foregroundStyle(.orange)
             }
-            VStack(spacing: 12) {
-                Text("\(match.currentSet.homeGames)")
-                Text("\(match.currentSet.awayGames)")
-            }.foregroundStyle(.cyan).overlay(alignment: .top) { Text("ŞİMDİ").font(.caption2).offset(y: -18) }
+            .lineLimit(1)
+            .minimumScaleFactor(0.78)
+
+            Text(matchLine(match))
+                .font(.system(size: 14, weight: .bold, design: .rounded))
+                .tracking(0.2)
+                .foregroundStyle(.secondary)
         }
-        .padding(.vertical, 18)
+        .frame(maxWidth: .infinity)
+        .padding(.top, 2)
+        .padding(.bottom, 2)
     }
 
-    private func scorePanel(_ match: PadelMatch) -> some View {
-        HStack(spacing: 10) {
-            scoreTile(team: .home, match: match, color: .cyan)
-            scoreTile(team: .away, match: match, color: .orange)
-        }
+    private func matchLine(_ match: PadelMatch) -> String {
+        if match.isTieBreak { return "TIE-BREAK" }
+        return "\(match.completedSets.count + 1). SET · OYUN \(match.currentSet.homeGames)–\(match.currentSet.awayGames)"
     }
 
-    private func scoreTile(team: Team, match: PadelMatch, color: Color) -> some View {
+    private func pointButton(_ team: Team, match: PadelMatch, color: Color) -> some View {
         Button { store.awardPoint(to: team) } label: {
-            VStack(spacing: 6) {
-                Text(team == .home ? "TAKIM A" : "TAKIM B").font(.caption.bold())
-                Text(match.pointLabel(for: team)).font(.system(size: 72, weight: .black, design: .rounded))
-                Label("Puan ekle", systemImage: "plus.circle.fill").font(.caption.bold())
+            VStack(spacing: 0) {
+                Text(team == .home ? "TAKIM A" : "TAKIM B")
+                    .font(.system(size: 13, weight: .black, design: .rounded))
+                    .padding(.top, 16)
+
+                Text(match.pointLabel(for: team))
+                    .font(.system(size: 88, weight: .black, design: .rounded))
+                    .minimumScaleFactor(0.52)
+                    .lineLimit(1)
+                    .padding(.top, 18)
+
+                VStack(spacing: 7) {
+                    playerRow(name: team == .home ? match.home.first : match.away.first,
+                              index: team == .home ? 0 : 1)
+                    playerRow(name: team == .home ? match.home.second : match.away.second,
+                              index: team == .home ? 2 : 3)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.top, 28)
+
+                Spacer(minLength: 0)
             }
-            .frame(maxWidth: .infinity, minHeight: 210)
-            .background(color.opacity(0.16), in: RoundedRectangle(cornerRadius: 24))
-            .overlay(RoundedRectangle(cornerRadius: 24).stroke(color.opacity(0.55)))
-        }.buttonStyle(.plain).foregroundStyle(color)
+            .frame(maxWidth: .infinity, minHeight: 352)
+        }
+        .buttonStyle(IPhoneScoreButtonStyle(color: color))
     }
 
-    private func infoStrip(_ match: PadelMatch) -> some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("SERVİS").font(.caption2).foregroundStyle(.secondary)
-                Label("\(match.currentServerName) · \(match.currentServerTeam == .home ? "Takım A" : "Takım B")", systemImage: "figure.padel")
+    private func playerRow(name: String, index: Int) -> some View {
+        let isServing = store.activeMatch?.serverIndex == index
+
+        return HStack(spacing: 5) {
+            if isServing {
+                Image("TennisBallIcon")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 15, height: 15)
             }
-            Spacer()
-            VStack(alignment: .trailing, spacing: 2) {
-                Text(match.decidingPointLabel ?? (match.isTieBreak ? "TIE-BREAK" : match.receivingSide))
-                if match.isDecidingPoint { Text("Karşılayan taraf seçer").font(.caption2).foregroundStyle(.secondary) }
+            Text(name)
+                .lineLimit(1)
+                .minimumScaleFactor(0.72)
+        }
+        .font(.system(size: 13, weight: isServing ? .bold : .semibold, design: .rounded))
+        .foregroundStyle(isServing
+                         ? Color(red: 0.88, green: 1, blue: 0.58)
+                         : Color.white.opacity(0.86))
+        .padding(.horizontal, 10)
+        .padding(.vertical, 5)
+        .frame(maxWidth: 130)
+        .background {
+            if isServing {
+                Capsule().fill(Color(red: 0.70, green: 1, blue: 0.25).opacity(0.14))
             }
         }
-        .font(.subheadline.bold()).padding()
-        .background(.white.opacity(0.08), in: RoundedRectangle(cornerRadius: 16))
+        .overlay {
+            if isServing {
+                Capsule().stroke(Color(red: 0.74, green: 1, blue: 0.32).opacity(0.30), lineWidth: 0.8)
+            }
+        }
     }
 
-    private func controls(_ match: PadelMatch) -> some View {
-        Text("Puana basmak için takım kartına dokun • Yanlış puanı geri alabilirsin")
-            .font(.caption).foregroundStyle(.secondary).multilineTextAlignment(.center)
+    private func undoButton(_ match: PadelMatch) -> some View {
+        Button { store.undo() } label: {
+            Label("Undo", systemImage: "arrow.counterclockwise")
+                .font(.system(size: 16, weight: .bold, design: .rounded))
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity, minHeight: 52)
+                .background(
+                    LinearGradient(
+                        colors: [
+                            Color(red: 0.68, green: 0.33, blue: 0.96).opacity(0.64),
+                            Color(red: 0.43, green: 0.20, blue: 0.88).opacity(0.46)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    in: Capsule()
+                )
+                .overlay(Capsule().stroke(.white.opacity(0.16), lineWidth: 0.8))
+                .shadow(color: Color.purple.opacity(0.24), radius: 7, y: 3)
+        }
+        .buttonStyle(IPhoneUndoButtonStyle())
+        .disabled(match.history.isEmpty)
+        .opacity(match.history.isEmpty ? 0.45 : 1)
+    }
+
+    private var finishButton: some View {
+        Button { confirmFinish = true } label: {
+            Text("Maçı Bitir")
+                .font(.system(size: 13, weight: .bold, design: .rounded))
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity, minHeight: 38)
+                .background(Color.red.opacity(0.88), in: Capsule())
+                .overlay(Capsule().stroke(.white.opacity(0.16), lineWidth: 0.8))
+        }
+        .buttonStyle(IPhoneUndoButtonStyle())
     }
 
     private func winnerOverlay(_ match: PadelMatch) -> some View {
         ZStack {
             Color.black.opacity(0.78).ignoresSafeArea()
             VStack(spacing: 18) {
-                Image(systemName: "trophy.fill").font(.system(size: 54)).foregroundStyle(.yellow)
-                Text("Maç tamamlandı").font(.title.bold())
-                Text(match.teamName(match.winner!)).font(.headline).multilineTextAlignment(.center)
+                Image(systemName: "trophy.fill")
+                    .font(.system(size: 54))
+                    .foregroundStyle(.yellow)
+                Text("Maç tamamlandı")
+                    .font(.title.bold())
+                Text(match.teamName(match.winner!))
+                    .font(.headline)
+                    .multilineTextAlignment(.center)
                 Button("Sonucu Kaydet") { store.closeCompletedMatch() }
-                    .buttonStyle(.borderedProminent).controlSize(.large)
-            }.padding(30)
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+            }
+            .padding(30)
         }
     }
+}
+
+private struct IPhoneScoreButtonStyle: ButtonStyle {
+    let color: Color
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .foregroundStyle(color)
+            .background(
+                color.opacity(configuration.isPressed ? 0.34 : 0.18),
+                in: RoundedRectangle(cornerRadius: 24)
+            )
+            .overlay(RoundedRectangle(cornerRadius: 24).stroke(color.opacity(0.62), lineWidth: 1))
+            .scaleEffect(configuration.isPressed ? 1.025 : 1)
+            .shadow(color: color.opacity(configuration.isPressed ? 0.22 : 0.04), radius: 9, y: 4)
+            .animation(.easeOut(duration: 0.10), value: configuration.isPressed)
+    }
+}
+
+private struct IPhoneUndoButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.96 : 1)
+            .brightness(configuration.isPressed ? 0.08 : 0)
+            .opacity(configuration.isPressed ? 0.88 : 1)
+            .animation(.easeOut(duration: 0.10), value: configuration.isPressed)
+    }
+}
+
+#Preview("iPhone - Canli Mac") {
+    LiveMatchView()
+        .environmentObject(MatchStore.preview(active: true, scored: true))
+        .previewDevice("iPhone 15 Pro")
 }
