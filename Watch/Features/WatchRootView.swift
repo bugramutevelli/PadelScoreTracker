@@ -9,15 +9,7 @@ struct WatchRootView: View {
             if let match = store.activeMatch {
                 WatchMatchView(match: match)
             } else {
-                VStack(spacing: 10) {
-                    Image(systemName: "figure.padel").font(.largeTitle).foregroundStyle(.green)
-                    Text("Padel Score hazır").font(.headline)
-                    Text("Maçı iPhone’dan başlat.").font(.caption).foregroundStyle(.secondary).multilineTextAlignment(.center)
-                    Button("Sağlık izni ver") {
-                        Task { _ = await workout.requestAuthorization() }
-                    }
-                    .font(.caption)
-                }
+                WatchQuickStartView()
             }
         }
         .onChange(of: store.activeMatch?.id) { _, matchID in
@@ -28,6 +20,76 @@ struct WatchRootView: View {
         .task {
             store.requestActiveMatch()
         }
+    }
+}
+
+private struct WatchQuickStartView: View {
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 14) {
+                Image(systemName: "figure.padel")
+                    .font(.system(size: 30, weight: .semibold))
+                    .foregroundStyle(.green)
+
+                Text("Padel Score")
+                    .font(.headline)
+
+                NavigationLink {
+                    WatchQuickMatchSetupView()
+                } label: {
+                    Label("Hızlı Maç Başlat", systemImage: "play.fill")
+                        .font(.system(size: 14, weight: .bold))
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(Color(red: 0.75, green: 0.96, blue: 0.25))
+                .foregroundStyle(Color(red: 0.06, green: 0.10, blue: 0.02))
+            }
+            .padding(.horizontal, 8)
+        }
+    }
+}
+
+private struct WatchQuickMatchSetupView: View {
+    @EnvironmentObject private var store: MatchStore
+    @Environment(\.dismiss) private var dismiss
+    @State private var format: MatchFormat = .bestOfThree
+    @State private var rule: ScoringRule = .advantage
+
+    var body: some View {
+        List {
+            Section("Kurallar") {
+                Picker("Format", selection: $format) {
+                    ForEach(MatchFormat.allCases) { format in
+                        Text(format.title).tag(format)
+                    }
+                }
+
+                Picker("Puanlama", selection: $rule) {
+                    ForEach(ScoringRule.allCases) { rule in
+                        Text(rule.title).tag(rule)
+                    }
+                }
+            }
+
+            Button {
+                store.start(
+                    home: .homeDefault,
+                    away: .awayDefault,
+                    rule: rule,
+                    format: format,
+                    firstServerIndex: 0
+                )
+                dismiss()
+            } label: {
+                Label("Başlat", systemImage: "play.fill")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+            }
+            .listRowBackground(Color(red: 0.75, green: 0.96, blue: 0.25))
+            .foregroundStyle(Color(red: 0.06, green: 0.10, blue: 0.02))
+        }
+        .navigationTitle("Hızlı Maç")
     }
 }
 
