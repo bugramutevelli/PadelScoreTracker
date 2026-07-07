@@ -5,6 +5,8 @@ import WatchConnectivity
 final class WatchSessionCoordinator: NSObject, ObservableObject, WCSessionDelegate {
     static let shared = WatchSessionCoordinator()
     var onMatchReceived: ((PadelMatch) -> Void)?
+    var onMatchCleared: (() -> Void)?
+    var onActiveMatchRequested: (() -> Void)?
 
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
@@ -18,6 +20,7 @@ final class WatchSessionCoordinator: NSObject, ObservableObject, WCSessionDelega
     }
 
     func send(_ match: PadelMatch) {
+        guard WCSession.isSupported() else { return }
         guard let data = try? encoder.encode(match) else { return }
         let payload: [String: Any] = ["match": data]
         try? WCSession.default.updateApplicationContext(payload)
@@ -27,7 +30,22 @@ final class WatchSessionCoordinator: NSObject, ObservableObject, WCSessionDelega
     }
 
     func clearMatch() {
-        try? WCSession.default.updateApplicationContext(["clear": true])
+        guard WCSession.isSupported() else { return }
+        let payload: [String: Any] = ["clear": true]
+        try? WCSession.default.updateApplicationContext(payload)
+        if WCSession.default.isReachable {
+            WCSession.default.sendMessage(payload, replyHandler: nil)
+        }
+    }
+
+    func requestActiveMatch() {
+        guard WCSession.isSupported() else { return }
+        let payload: [String: Any] = ["requestActiveMatch": true]
+        if WCSession.default.isReachable {
+            WCSession.default.sendMessage(payload, replyHandler: nil)
+        } else {
+            WCSession.default.transferUserInfo(payload)
+        }
     }
 
     func session(_ session: WCSession, didReceiveApplicationContext applicationContext: [String : Any]) {
@@ -38,7 +56,21 @@ final class WatchSessionCoordinator: NSObject, ObservableObject, WCSessionDelega
         receive(message)
     }
 
+    func session(_ session: WCSession, didReceiveUserInfo userInfo: [String : Any]) {
+        receive(userInfo)
+    }
+
     private func receive(_ payload: [String: Any]) {
+        if payload["requestActiveMatch"] as? Bool == true {
+            DispatchQueue.main.async { [weak self] in self?.onActiveMatchRequested?() }
+            return
+        }
+
+        if payload["clear"] as? Bool == true {
+            DispatchQueue.main.async { [weak self] in self?.onMatchCleared?() }
+            return
+        }
+
         guard let data = payload["match"] as? Data,
               let match = try? decoder.decode(PadelMatch.self, from: data) else { return }
         DispatchQueue.main.async { [weak self] in self?.onMatchReceived?(match) }
@@ -51,4 +83,3 @@ final class WatchSessionCoordinator: NSObject, ObservableObject, WCSessionDelega
     func sessionDidDeactivate(_ session: WCSession) { session.activate() }
     #endif
 }
-

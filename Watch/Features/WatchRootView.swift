@@ -25,6 +25,9 @@ struct WatchRootView: View {
                 workout.endWorkout()
             }
         }
+        .task {
+            store.requestActiveMatch()
+        }
     }
 }
 

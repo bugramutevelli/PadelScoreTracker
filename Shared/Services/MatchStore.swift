@@ -20,6 +20,19 @@ final class MatchStore: ObservableObject {
         sync.onMatchReceived = { [weak self] match in
             Task { @MainActor in self?.acceptRemote(match) }
         }
+        sync.onMatchCleared = { [weak self] in
+            Task { @MainActor in
+                self?.activeMatch = nil
+                self?.clearActive()
+            }
+        }
+        sync.onActiveMatchRequested = { [weak self] in
+            Task { @MainActor in self?.broadcast() }
+        }
+
+        #if os(watchOS)
+        sync.requestActiveMatch()
+        #endif
     }
 
     func start(home: TeamPlayers, away: TeamPlayers, rule: ScoringRule, format: MatchFormat, firstServerIndex: Int) {
@@ -69,6 +82,10 @@ final class MatchStore: ObservableObject {
         sync.clearMatch()
     }
 
+    func requestActiveMatch() {
+        sync.requestActiveMatch()
+    }
+
     func delete(at offsets: IndexSet) {
         for index in offsets.sorted(by: >) { matches.remove(at: index) }
         save()
@@ -89,7 +106,6 @@ final class MatchStore: ObservableObject {
     private func acceptRemote(_ match: PadelMatch) {
         activeMatch = match
         persistActiveIfNeeded()
-        broadcast()
     }
 
     private func broadcast() {
