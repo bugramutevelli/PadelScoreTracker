@@ -16,9 +16,8 @@ struct HomeView: View {
                         .font(.system(size: 25, weight: .black, design: .rounded))
                         .foregroundStyle(Color(red: 0.78, green: 0.96, blue: 0.24))
                     Spacer()
-                    Text("OYNA")
-                        .font(.caption.bold())
-                        .foregroundStyle(.secondary)
+                    PadelMarkIcon()
+                        .frame(width: 45, height: 45)
                 }
 
                 hero
@@ -154,6 +153,120 @@ struct HomeView: View {
         .padding()
         .background(Color(red: 0.07, green: 0.10, blue: 0.16), in: RoundedRectangle(cornerRadius: 18))
         .overlay(RoundedRectangle(cornerRadius: 18).stroke(.white.opacity(0.08)))
+    }
+}
+
+private struct PadelMarkIcon: View {
+    var body: some View {
+        ZStack {
+            racket
+                .rotationEffect(.degrees(-22))
+                .offset(x: -4, y: -3)
+
+            ball
+                .frame(width: 17, height: 17)
+                .offset(x: 12, y: 12)
+        }
+        .shadow(color: .black.opacity(0.36), radius: 7, y: 4)
+        .accessibilityHidden(true)
+    }
+
+    private var racket: some View {
+        ZStack {
+            Ellipse()
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color(red: 0.92, green: 0.97, blue: 1.0),
+                            Color(red: 0.45, green: 0.52, blue: 0.60),
+                            Color(red: 0.12, green: 0.15, blue: 0.20)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .frame(width: 24, height: 32)
+                .overlay(
+                    Ellipse()
+                        .stroke(
+                            LinearGradient(
+                                colors: [.white, Color(red: 0.55, green: 0.62, blue: 0.70)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 2
+                        )
+                )
+
+            Ellipse()
+                .fill(Color(red: 0.06, green: 0.09, blue: 0.14).opacity(0.72))
+                .frame(width: 16, height: 23)
+
+            VStack(spacing: 3) {
+                HStack(spacing: 4) {
+                    hole
+                    hole
+                    hole
+                }
+                HStack(spacing: 4) {
+                    hole
+                    hole
+                    hole
+                }
+                HStack(spacing: 4) {
+                    hole
+                    hole
+                }
+            }
+            .offset(y: -2)
+
+            RoundedRectangle(cornerRadius: 3)
+                .fill(Color(red: 0.86, green: 0.90, blue: 0.94))
+                .frame(width: 7, height: 18)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 2.5)
+                        .fill(Color(red: 0.08, green: 0.11, blue: 0.16))
+                        .frame(width: 4, height: 15)
+                )
+                .offset(y: 24)
+        }
+    }
+
+    private var hole: some View {
+        Circle()
+            .fill(Color(red: 0.56, green: 0.63, blue: 0.70))
+            .frame(width: 2.5, height: 2.5)
+    }
+
+    private var ball: some View {
+        ZStack {
+            Circle()
+                .fill(
+                    RadialGradient(
+                        colors: [
+                            Color(red: 0.95, green: 1.0, blue: 0.54),
+                            Color(red: 0.78, green: 0.96, blue: 0.24),
+                            Color(red: 0.56, green: 0.79, blue: 0.09)
+                        ],
+                        center: .topLeading,
+                        startRadius: 1,
+                        endRadius: 17
+                    )
+                )
+                .overlay(Circle().stroke(Color(red: 0.92, green: 1.0, blue: 0.47), lineWidth: 1.4))
+
+            Capsule()
+                .stroke(Color(red: 0.49, green: 0.67, blue: 0.08), lineWidth: 1.2)
+                .frame(width: 15, height: 3)
+                .rotationEffect(.degrees(-24))
+                .offset(y: -3)
+
+            Capsule()
+                .stroke(Color(red: 0.49, green: 0.67, blue: 0.08), lineWidth: 1.2)
+                .frame(width: 15, height: 3)
+                .rotationEffect(.degrees(24))
+                .offset(y: 3)
+        }
     }
 }
 

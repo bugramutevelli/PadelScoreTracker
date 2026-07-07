@@ -1,39 +1,136 @@
 <!doctype html>
 <html lang="tr">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Padel Score Tracker — Apple Watch Önizleme</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Padel Score Tracker - Apple Watch Önizleme</title>
   <style>
-    :root{--cyan:#22d3ee;--orange:#fb923c;--muted:#8d98aa}
-    *{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:radial-gradient(circle at 28% 20%,#153066,transparent 35%),radial-gradient(circle at 75% 76%,#16434a,transparent 30%),#050812;color:white;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden}
-    .layout{display:flex;align-items:center;gap:72px}.copy{width:300px}.eyebrow{color:#c8f43d;font-size:12px;font-weight:900;letter-spacing:1.8px}.copy h1{font-size:42px;line-height:1.03;margin:13px 0}.copy p{color:#9da9ba;line-height:1.55}.hint{font-size:12px;color:#6f7b8d;margin-top:24px}
+    :root{--cyan:#22d3ee;--orange:#fb923c;--lime:#c8f43d;--muted:#8d98aa;--screen:#050609;--line:#222a38}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:radial-gradient(circle at 28% 20%,#153066,transparent 35%),radial-gradient(circle at 75% 76%,#16434a,transparent 30%),#050812;color:white;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden}
+    .layout{display:flex;align-items:center;gap:72px}
+    .copy{width:310px}.eyebrow{color:var(--lime);font-size:12px;font-weight:900;letter-spacing:1.8px}.copy h1{font-size:42px;line-height:1.03;margin:13px 0}.copy p{color:#9da9ba;line-height:1.55}.hint{font-size:12px;color:#6f7b8d;margin-top:24px}
     .watch-wrap{position:relative;padding:74px 0}.strap{position:absolute;left:50%;translate:-50%;top:-115px;width:175px;height:650px;border-radius:60px;background:linear-gradient(90deg,#242933,#4b515d 48%,#272d37);box-shadow:inset 0 0 0 3px #666b73}
-    .watch{position:relative;width:332px;height:402px;border-radius:88px;background:linear-gradient(145deg,#656b74,#171b21 22%,#101217 77%,#505760);padding:14px;box-shadow:0 40px 90px #000c, inset 0 0 0 2px #777b82}
+    .watch{position:relative;width:332px;height:402px;border-radius:88px;background:linear-gradient(145deg,#656b74,#171b21 22%,#101217 77%,#505760);padding:14px;box-shadow:0 40px 90px #000c,inset 0 0 0 2px #777b82}
     .crown{position:absolute;right:-29px;top:92px;width:23px;height:65px;border-radius:10px;background:repeating-linear-gradient(0deg,#363c46 0 3px,#5e6570 3px 5px);box-shadow:4px 0 8px #000}.side{position:absolute;right:-19px;top:177px;width:11px;height:54px;border-radius:5px;background:#3f4650}
-    .screen{height:100%;border-radius:75px;background:#050609;overflow:hidden}.pages{width:200%;height:100%;display:flex;transition:transform .3s cubic-bezier(.22,.75,.24,1)}.page{width:50%;height:100%;flex:none;padding:18px 18px 14px}.score-page{display:flex;flex-direction:column}.scoreboard{text-align:center;margin-bottom:16px;position:relative}.scoreboard small{display:block;color:#7f8a9b;font-size:8px;font-weight:900;letter-spacing:1px}.scoreboard strong{display:block;font-size:29px;line-height:1;font-weight:950}.scoreboard>span{display:block;color:#929cac;font-size:9.5px;font-weight:800;margin-top:4px;letter-spacing:.25px}.swipe-arrow{position:absolute;right:-2px;top:12px;width:24px;height:24px;border:0;background:transparent;color:#687384;font-size:16px;cursor:pointer}
-    .score{width:90%;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:8px}.team{height:195px;padding:11px 6px 9px;border:1px solid;border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;cursor:pointer;user-select:none;touch-action:manipulation;transition:transform .10s ease-out,background-color .10s ease-out,box-shadow .10s ease-out}.team:active{transform:scale(1.035)}.a{color:var(--cyan);background:#22d3ee17}.b{color:var(--orange);background:#fb923c17}.a:active{background:#22d3ee38;box-shadow:0 0 15px #22d3ee3d}.b:active{background:#fb923c38;box-shadow:0 0 15px #fb923c3d}.team small{font-size:10px;font-weight:950;letter-spacing:.3px}.team b{font-size:68px;line-height:1;margin:12px 0 11px}.players{width:100%;display:grid;gap:0;margin-top:7px}.player{min-height:20px;width:max-content;max-width:100%;justify-self:center;padding:2px 7px;display:flex;justify-content:center;align-items:center;gap:4px;color:#ffffffdc;font-family:ui-rounded,"SF Pro Rounded",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.05px;white-space:nowrap;overflow:hidden;text-align:center;border:1px solid transparent;border-radius:999px}.player.serving{color:#e3ff94;background:#baff3d24;border-color:#c2ff4c45;box-shadow:inset 0 0 8px #b6ff2a12}.ball{width:16px;height:16px;display:inline-block;flex:0 0 16px}.ball img{display:block;width:100%;height:100%;object-fit:contain}.ball.hidden{visibility:hidden}.bottom{margin-top:auto;padding-top:8px;display:flex;justify-content:center}.undo{border:1px solid #ffffff28;border-radius:999px;width:72%;height:42px;color:white;background:linear-gradient(135deg,rgba(173,84,245,.64),rgba(109,52,223,.46));backdrop-filter:blur(7px);box-shadow:0 5px 14px #8b3ff02e;cursor:pointer;font-size:13px;font-weight:850;letter-spacing:.2px;display:flex;align-items:center;justify-content:center;gap:7px;touch-action:manipulation;transition:transform .10s ease-out,filter .10s ease-out,opacity .10s ease-out}.undo:active{transform:scale(.94);filter:brightness(1.16);opacity:.86}.undo-icon{font-size:18px;line-height:1;font-weight:900}
-    .players{margin-top:12px}
-    .player{min-height:16px;padding-top:0;padding-bottom:0}
+    .screen{height:100%;border-radius:75px;background:var(--screen);overflow:hidden;position:relative}
+    .view{height:100%;padding:24px 23px 18px;display:none}.view.active{display:flex}.quick{align-items:center;justify-content:center;text-align:center;flex-direction:column;gap:14px}.icon{width:76px;height:76px;display:grid;place-items:center}.padel-mark{width:76px;height:76px;filter:drop-shadow(0 9px 18px #0008)}.title{font-size:20px;font-weight:850}.primary{width:100%;min-height:48px;border:0;border-radius:999px;background:var(--lime);color:#101800;font-size:15px;font-weight:900;cursor:pointer}.primary:active{transform:scale(.97)}
+    .setup{flex-direction:column;gap:10px}.nav{display:flex;align-items:center;justify-content:space-between}.back{border:0;background:transparent;color:#9aa5b5;font-size:22px;cursor:pointer}.nav strong{font-size:16px}.section-title{margin:4px 0 2px;color:#9ca6b7;font-size:10px;font-weight:900;letter-spacing:.9px;text-transform:uppercase}
+    .field{display:grid;gap:5px}.field span{color:#778295;font-size:9px;font-weight:850;text-transform:uppercase}.select{appearance:none;width:100%;height:38px;border:1px solid var(--line);border-radius:12px;background:#101621;color:#fff;font-size:12px;font-weight:750;padding:0 11px;outline:0}.select:focus{border-color:#c8f43d99}.setup .primary{margin-top:auto}
+    .pages{width:200%;height:100%;display:flex;transition:transform .3s cubic-bezier(.22,.75,.24,1)}.page{width:50%;height:100%;flex:none;padding:18px 18px 14px}.score-page{display:flex;flex-direction:column}.scoreboard{text-align:center;margin-bottom:16px;position:relative}.scoreboard small{display:block;color:#7f8a9b;font-size:8px;font-weight:900;letter-spacing:1px}.scoreboard strong{display:block;font-size:29px;line-height:1;font-weight:950}.scoreboard>span{display:block;color:#929cac;font-size:9.5px;font-weight:800;margin-top:4px;letter-spacing:.25px}.swipe-arrow{position:absolute;right:-2px;top:12px;width:24px;height:24px;border:0;background:transparent;color:#687384;font-size:16px;cursor:pointer}
+    .score{width:90%;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:8px}.team{height:195px;padding:11px 6px 9px;border:1px solid;border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;cursor:pointer;user-select:none;touch-action:manipulation;transition:transform .10s ease-out,background-color .10s ease-out,box-shadow .10s ease-out}.team:active{transform:scale(1.035)}.a{color:var(--cyan);background:#22d3ee17}.b{color:var(--orange);background:#fb923c17}.a:active{background:#22d3ee38;box-shadow:0 0 15px #22d3ee3d}.b:active{background:#fb923c38;box-shadow:0 0 15px #fb923c3d}.team small{font-size:10px;font-weight:950;letter-spacing:.3px}.team b{font-size:68px;line-height:1;margin:12px 0 11px}.players{width:100%;display:grid;gap:0;margin-top:12px}.player{min-height:16px;width:max-content;max-width:100%;justify-self:center;padding:0 7px;display:flex;justify-content:center;align-items:center;gap:4px;color:#ffffffdc;font-family:ui-rounded,"SF Pro Rounded",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.05px;white-space:nowrap;overflow:hidden;text-align:center;border:1px solid transparent;border-radius:999px}.player.serving{color:#e3ff94;background:#baff3d24;border-color:#c2ff4c45;box-shadow:inset 0 0 8px #b6ff2a12}.ball{width:16px;height:16px;display:inline-block;flex:0 0 16px}.ball img{display:block;width:100%;height:100%;object-fit:contain}.ball.hidden{visibility:hidden}
+    .bottom{margin-top:auto;padding-top:8px;display:flex;justify-content:center}.undo{border:1px solid #ffffff28;border-radius:999px;width:72%;height:42px;color:white;background:linear-gradient(135deg,rgba(173,84,245,.64),rgba(109,52,223,.46));backdrop-filter:blur(7px);box-shadow:0 5px 14px #8b3ff02e;cursor:pointer;font-size:13px;font-weight:850;letter-spacing:.2px;display:flex;align-items:center;justify-content:center;gap:7px;touch-action:manipulation;transition:transform .10s ease-out,filter .10s ease-out,opacity .10s ease-out}.undo:active{transform:scale(.94);filter:brightness(1.16);opacity:.86}.undo-icon{font-size:18px;line-height:1;font-weight:900}
     .workout-page{display:flex;flex-direction:column;padding:23px 25px 18px}.workout-head{display:flex;justify-content:space-between;align-items:center;color:#36d45c;font-size:13px;font-weight:950;letter-spacing:.8px}.workout-icon{font-size:19px}.workout-time{color:#ffe600;font-size:54px;line-height:1.05;font-weight:500;font-variant-numeric:tabular-nums;margin:12px 0 10px}.workout-rule{height:1px;background:#ffffff20}.metrics{display:grid;grid-template-columns:1fr 1fr;gap:18px 12px;margin-top:17px}.metric{text-align:left}.metric small{display:block;color:#7e8999;font-size:8px;font-weight:850;letter-spacing:.5px}.metric strong{display:block;font-size:17px;line-height:1.2;margin-top:2px}.pink{color:#ff375f}.red{color:#ff453a}.cyan{color:#64d2ff}.green{color:#32d74b}.back-hint{margin-top:auto;border:0;background:transparent;text-align:center;color:#687384;font-size:9px;cursor:pointer}
     @media(max-width:780px){.copy{display:none}.layout{transform:scale(.82)}.watch-wrap{padding:0}.strap{top:-155px}}
   </style>
 </head>
 <body>
   <main class="layout">
-    <section class="copy"><div class="eyebrow">APPLE WATCH</div><h1>Bilekten tek dokunuşla skor.</h1><p>Telefon çantada kalır. Puan, servis sırası ve oyun skoru saat üzerinde net biçimde görünür.</p><div class="hint">Turkuaz veya turuncu skor alanına tıklayarak dene.</div></section>
-    <div class="watch-wrap"><div class="strap"></div><div class="watch"><div class="crown"></div><div class="side"></div><section class="screen" id="screen"><div class="pages" id="pages"><section class="page score-page"><header class="scoreboard"><small>SETLER</small><strong><span id="sa">0</span>–<span id="sb">0</span></strong><span id="matchLine">1. SET · OYUN 0–0</span><button class="swipe-arrow" onclick="setPage(1)" aria-label="Antrenman sayfası">›</button></header><div class="score"><div class="team a" onclick="point('a')"><small>TAKIM A</small><b id="pa">0</b><div class="players" id="playersA"></div></div><div class="team b" onclick="point('b')"><small>TAKIM B</small><b id="pb">0</b><div class="players" id="playersB"></div></div></div><footer class="bottom"><button class="undo" onclick="undo()"><span class="undo-icon">↺</span><span>Undo</span></button></footer></section><section class="page workout-page"><header class="workout-head"><span>PADEL</span><span class="workout-icon">🏃</span></header><div class="workout-time">54:18</div><div class="workout-rule"></div><div class="metrics"><div class="metric"><small>AKTİF KALORİ</small><strong class="pink">286 KCAL</strong></div><div class="metric"><small>NABIZ</small><strong class="red">142 BPM</strong></div><div class="metric"><small>MESAFE</small><strong class="cyan">3,14 KM</strong></div><div class="metric"><small>ADIM</small><strong class="green">4.218</strong></div></div><button class="back-hint" onclick="setPage(0)">‹ Skora dön</button></section></div></section></div></div>
+    <section class="copy">
+      <div class="eyebrow">APPLE WATCH</div>
+      <h1>Saatten hızlı maç başlat.</h1>
+      <p>Oyuncular varsayılan gelir. Watch üzerinde sadece format, puanlama ve ilk servis seçilir; iPhone’dan başlatılırsa iPhone’daki ayarlar geçerli olur.</p>
+      <div class="hint">Önce hızlı maç ekranını, sonra skor kartlarını dene.</div>
+    </section>
+    <div class="watch-wrap">
+      <div class="strap"></div>
+      <div class="watch">
+        <div class="crown"></div><div class="side"></div>
+        <section class="screen" id="screen">
+          <section class="view quick active" id="quickView">
+            <div class="icon" aria-hidden="true">
+              <svg class="padel-mark" viewBox="0 0 96 96" role="img">
+                <defs>
+                  <linearGradient id="racketFill" x1="16" y1="8" x2="82" y2="82">
+                    <stop offset="0" stop-color="#ecf7ff"/>
+                    <stop offset="0.52" stop-color="#738397"/>
+                    <stop offset="1" stop-color="#1e2633"/>
+                  </linearGradient>
+                  <linearGradient id="racketEdge" x1="24" y1="10" x2="76" y2="72">
+                    <stop offset="0" stop-color="#f8fbff"/>
+                    <stop offset="1" stop-color="#8d9caf"/>
+                  </linearGradient>
+                  <radialGradient id="ballFill" cx="35%" cy="30%" r="72%">
+                    <stop offset="0" stop-color="#f3ff8a"/>
+                    <stop offset="0.72" stop-color="#c8f43d"/>
+                    <stop offset="1" stop-color="#8ec918"/>
+                  </radialGradient>
+                </defs>
+                <g transform="rotate(-22 48 48)">
+                  <ellipse cx="43" cy="34" rx="22" ry="29" fill="url(#racketFill)" stroke="url(#racketEdge)" stroke-width="4"/>
+                  <ellipse cx="43" cy="34" rx="15" ry="21" fill="#101723" opacity=".72"/>
+                  <g fill="#8ea0b3">
+                    <circle cx="35" cy="22" r="2.2"/><circle cx="43" cy="20" r="2.2"/><circle cx="51" cy="22" r="2.2"/>
+                    <circle cx="32" cy="31" r="2.2"/><circle cx="41" cy="31" r="2.2"/><circle cx="50" cy="31" r="2.2"/>
+                    <circle cx="35" cy="41" r="2.2"/><circle cx="43" cy="43" r="2.2"/><circle cx="51" cy="41" r="2.2"/>
+                    <circle cx="40" cy="52" r="2.2"/><circle cx="48" cy="51" r="2.2"/>
+                  </g>
+                  <rect x="38" y="58" width="12" height="29" rx="5" fill="#d9e4ee"/>
+                  <rect x="40.5" y="62" width="7" height="25" rx="3.5" fill="#151b25"/>
+                </g>
+                <circle cx="68" cy="66" r="13" fill="url(#ballFill)" stroke="#eaff78" stroke-width="2.5"/>
+                <path d="M58 64c7 1 13-2 19-8M58 70c8-1 14 2 20 8" fill="none" stroke="#7daa14" stroke-width="2.4" stroke-linecap="round" opacity=".86"/>
+              </svg>
+            </div>
+            <div class="title">Padel Score</div>
+            <button class="primary" onclick="showSetup()">▶ Hızlı Maç Başlat</button>
+          </section>
+
+          <section class="view setup" id="setupView">
+            <div class="nav"><button class="back" onclick="showQuick()" aria-label="Geri">‹</button><strong>Hızlı Maç</strong><span></span></div>
+            <div class="section-title">Kurallar</div>
+            <label class="field"><span>Format</span><select class="select" id="format"><option value="bestOfThree">3 set üzerinden</option><option value="singleSet">Tek set</option><option value="miniSets">Mini setler</option><option value="advantageFinalSet">3. set: Avantaj seti</option><option value="matchTieBreak">3. set: Match tie-break</option><option value="superTieBreak">3. set: Super tie-break</option></select></label>
+            <label class="field"><span>Puanlama</span><select class="select" id="rule"><option value="advantage">Klasik avantaj</option><option value="starPoint">Star Point</option><option value="goldenPoint">Golden Point</option></select></label>
+            <label class="field"><span>İlk servis</span><select class="select" id="firstServer"><option value="0">Oyuncu 1</option><option value="1">Oyuncu 3</option><option value="2">Oyuncu 2</option><option value="3">Oyuncu 4</option></select></label>
+            <button class="primary" onclick="startMatch()">Başlat</button>
+          </section>
+
+          <section class="view active" id="matchView" style="display:none;padding:0">
+            <div class="pages" id="pages">
+              <section class="page score-page">
+                <header class="scoreboard">
+                  <small>SETLER</small>
+                  <strong><span id="sa">0</span>–<span id="sb">0</span></strong>
+                  <span id="matchLine">1. SET · OYUN 0–0</span>
+                  <button class="swipe-arrow" onclick="setPage(1)" aria-label="Antrenman sayfası">›</button>
+                </header>
+                <div class="score">
+                  <div class="team a" onclick="point('a')"><small>TAKIM A</small><b id="pa">0</b><div class="players" id="playersA"></div></div>
+                  <div class="team b" onclick="point('b')"><small>TAKIM B</small><b id="pb">0</b><div class="players" id="playersB"></div></div>
+                </div>
+                <footer class="bottom"><button class="undo" onclick="undo()"><span class="undo-icon">↺</span><span>Undo</span></button></footer>
+              </section>
+              <section class="page workout-page">
+                <header class="workout-head"><span>PADEL</span><span class="workout-icon">⌁</span></header>
+                <div class="workout-time">54:18</div><div class="workout-rule"></div>
+                <div class="metrics"><div class="metric"><small>AKTİF KALORİ</small><strong class="pink">286 KCAL</strong></div><div class="metric"><small>NABIZ</small><strong class="red">142 BPM</strong></div><div class="metric"><small>MESAFE</small><strong class="cyan">3,14 KM</strong></div><div class="metric"><small>ADIM</small><strong class="green">4.218</strong></div></div>
+                <button class="back-hint" onclick="setPage(0)">‹ Skora dön</button>
+              </section>
+            </div>
+          </section>
+        </section>
+      </div>
+    </div>
   </main>
   <script>
-    const labels=['0','15','30','40'],servers=['Buğra','Oyuncu 3','Oyuncu 2','Oyuncu 4'];let s={a:0,b:0,ga:0,gb:0,sa:0,sb:0,server:0,tieBreak:false,tbPlayed:0,winner:null},history=[];
-    function label(t){if(s.tieBreak)return String(s[t]);const o=t==='a'?'b':'a';if(s[t]>=3&&s[o]>=3){if(s[t]===s[o])return'40';return s[t]>s[o]?'AV':'40'}return labels[Math.min(s[t],3)]}
-    function completeSet(t){s['s'+t]++;s.a=s.b=s.ga=s.gb=s.tbPlayed=0;s.tieBreak=false;if(s['s'+t]>=2)s.winner=t}
-    function completeGame(t){s['g'+t]++;s.a=s.b=0;s.server=(s.server+1)%4;const o=t==='a'?'b':'a';if(s['g'+t]>=6&&s['g'+t]-s['g'+o]>=2)completeSet(t);else if(s.ga===6&&s.gb===6){s.tieBreak=true;s.tbPlayed=0}}
-    function point(t){if(s.winner)return;history.push({...s});const o=t==='a'?'b':'a';s[t]++;if(s.tieBreak){s.tbPlayed++;if(s.tbPlayed===1||s.tbPlayed%2===1)s.server=(s.server+1)%4;if(s[t]>=7&&s[t]-s[o]>=2)completeSet(t)}else if(s[t]>=4&&s[t]-s[o]>=2)completeGame(t);render()}
+    const labels=['0','15','30','40'];
+    const servers=['Oyuncu 1','Oyuncu 3','Oyuncu 2','Oyuncu 4'];
+    let s={a:0,b:0,ga:0,gb:0,sa:0,sb:0,server:0,rule:'advantage',format:'bestOfThree',tieBreak:false,tbPlayed:0,matchTB:false,winner:null};
+    let history=[],currentPage=0,startX=0;
+    function view(id){quickView.style.display='none';setupView.style.display='none';matchView.style.display='none';document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(id).style.display=id==='matchView'?'block':'flex';document.getElementById(id).classList.add('active')}
+    function showQuick(){view('quickView')}function showSetup(){view('setupView')}
+    function startMatch(){s={a:0,b:0,ga:0,gb:0,sa:0,sb:0,server:Number(firstServer.value),rule:rule.value,format:format.value,tieBreak:false,tbPlayed:0,matchTB:false,winner:null};history=[];currentPage=0;showPage();view('matchView');render()}
+    function gamesTarget(){return s.format==='miniSets'?4:6}function setsTarget(){return s.format==='singleSet'?1:2}function decidingTBTarget(){return s.format==='matchTieBreak'?7:s.format==='superTieBreak'?10:null}
+    function isDeciding(){return s.a===s.b&&((s.rule==='goldenPoint'&&s.a===3)||(s.rule==='starPoint'&&s.a>=5))}
+    function completeSet(t){s['s'+t]++;s.a=s.b=s.ga=s.gb=s.tbPlayed=0;s.tieBreak=s.matchTB=false;if(s['s'+t]>=setsTarget())s.winner=t;else if(s.sa===1&&s.sb===1&&decidingTBTarget()){s.tieBreak=s.matchTB=true}}
+    function completeGame(t){s['g'+t]++;s.a=s.b=0;s.server=(s.server+1)%4;const o=t==='a'?'b':'a',target=gamesTarget();if(s['g'+t]>=target&&s['g'+t]-s['g'+o]>=2)completeSet(t);else if(s.ga===target&&s.gb===target&&!(s.format==='advantageFinalSet'&&s.sa+s.sb===2)){s.tieBreak=true;s.tbPlayed=0}}
+    function point(t){if(s.winner)return;history.push({...s});const o=t==='a'?'b':'a';if(!s.tieBreak&&isDeciding()){completeGame(t);render();return}s[t]++;if(s.tieBreak){s.tbPlayed++;if(s.tbPlayed===1||s.tbPlayed%2===1)s.server=(s.server+1)%4;const target=s.matchTB?decidingTBTarget():7;if(s[t]>=target&&s[t]-s[o]>=2)completeSet(t)}else{const won=s.rule==='goldenPoint'?s[t]>=4:(s[t]>=4&&s[t]-s[o]>=2);if(won)completeGame(t)}render()}
     function undo(){if(history.length){s=history.pop();render()}}
+    function label(t){if(s.tieBreak)return String(s[t]);const o=t==='a'?'b':'a';if(s.rule==='starPoint'&&isDeciding())return'★';if(s.rule!=='goldenPoint'&&s[t]>=3&&s[o]>=3){if(s[t]===s[o])return'40';return s[t]>s[o]?'AV':'40'}return labels[Math.min(s[t],3)]}
     function playerLine(name,index){const serving=s.server===index;return `<div class="player ${serving?'serving':''}"><span class="ball ${serving?'':'hidden'}"><img src="tennis-ball.png" alt=""></span><span>${name}</span></div>`}
-    function render(){pa.textContent=label('a');pb.textContent=label('b');sa.textContent=s.sa;sb.textContent=s.sb;matchLine.textContent=s.tieBreak?'TIE-BREAK':`${s.sa+s.sb+1}. SET · OYUN ${s.ga}–${s.gb}`;playersA.innerHTML=playerLine(servers[0],0)+playerLine(servers[2],2);playersB.innerHTML=playerLine(servers[1],1)+playerLine(servers[3],3)}
-    let currentPage=0,startX=0;function showPage(){pages.style.transform=`translateX(-${currentPage*50}%)`}function setPage(page){currentPage=page;showPage()}
-    screen.addEventListener('pointerdown',e=>startX=e.clientX);screen.addEventListener('pointerup',e=>{const dx=e.clientX-startX;if(Math.abs(dx)>35){currentPage=dx<0?1:0;showPage()}});
-    render();
+    function render(){pa.textContent=label('a');pb.textContent=label('b');sa.textContent=s.sa;sb.textContent=s.sb;matchLine.textContent=s.winner?`TAKIM ${s.winner==='a'?'A':'B'} KAZANDI`:s.tieBreak?'TIE-BREAK':`${s.sa+s.sb+1}. SET · OYUN ${s.ga}–${s.gb}`;playersA.innerHTML=playerLine(servers[0],0)+playerLine(servers[2],2);playersB.innerHTML=playerLine(servers[1],1)+playerLine(servers[3],3)}
+    function showPage(){pages.style.transform=`translateX(-${currentPage*50}%)`}function setPage(page){currentPage=page;showPage()}
+    screen.addEventListener('pointerdown',e=>startX=e.clientX);screen.addEventListener('pointerup',e=>{const dx=e.clientX-startX;if(matchView.style.display!=='none'&&Math.abs(dx)>35){currentPage=dx<0?1:0;showPage()}});
   </script>
-</body></html>
+</body>
+</html>
