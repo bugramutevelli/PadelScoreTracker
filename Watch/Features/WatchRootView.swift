@@ -55,6 +55,14 @@ private struct WatchQuickMatchSetupView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var format: MatchFormat = .bestOfThree
     @State private var rule: ScoringRule = .advantage
+    @State private var firstServerIndex = 0
+
+    private let serverNames = [
+        TeamPlayers.homeDefault.first,
+        TeamPlayers.awayDefault.first,
+        TeamPlayers.homeDefault.second,
+        TeamPlayers.awayDefault.second
+    ]
 
     var body: some View {
         List {
@@ -70,6 +78,12 @@ private struct WatchQuickMatchSetupView: View {
                         Text(rule.title).tag(rule)
                     }
                 }
+
+                Picker("İlk servis", selection: $firstServerIndex) {
+                    ForEach(serverNames.indices, id: \.self) { index in
+                        Text(serverNames[index]).tag(index)
+                    }
+                }
             }
 
             Button {
@@ -78,7 +92,7 @@ private struct WatchQuickMatchSetupView: View {
                     away: .awayDefault,
                     rule: rule,
                     format: format,
-                    firstServerIndex: 0
+                    firstServerIndex: firstServerIndex
                 )
                 dismiss()
             } label: {
