@@ -1,20 +1,28 @@
 import SwiftUI
+import WatchKit
 
 struct WatchRootView: View {
     @EnvironmentObject private var store: MatchStore
     @EnvironmentObject private var workout: WorkoutManager
+    @State private var isShowingMatch = false
 
     var body: some View {
         Group {
-            if let match = store.activeMatch {
+            if isShowingMatch, let match = store.activeMatch {
                 WatchMatchView(match: match)
             } else {
-                WatchQuickStartView()
+                WatchQuickStartView(
+                    hasActiveMatch: store.activeMatch != nil,
+                    onContinueMatch: { isShowingMatch = true }
+                )
             }
         }
-        .onChange(of: store.activeMatch?.id) { _, matchID in
-            if matchID == nil && workout.isRunning {
-                workout.endWorkout()
+        .onChange(of: store.activeMatch?.id) { matchID in
+            if matchID == nil {
+                isShowingMatch = false
+                if workout.isRunning {
+                    workout.endWorkout()
+                }
             }
         }
         .task {
@@ -24,18 +32,20 @@ struct WatchRootView: View {
 }
 
 private struct WatchQuickStartView: View {
+    let hasActiveMatch: Bool
+    let onContinueMatch: () -> Void
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 14) {
-                Image(systemName: "figure.padel")
-                    .font(.system(size: 30, weight: .semibold))
-                    .foregroundStyle(.green)
+                WatchPadelMarkIcon()
+                    .frame(width: 45, height: 45)
 
                 Text("Padel Score")
                     .font(.headline)
 
                 NavigationLink {
-                    WatchQuickMatchSetupView()
+                    WatchQuickMatchSetupView(onStartMatch: onContinueMatch)
                 } label: {
                     Label("Hızlı Maç Başlat", systemImage: "play.fill")
                         .font(.system(size: 14, weight: .bold))
@@ -44,6 +54,15 @@ private struct WatchQuickStartView: View {
                 .buttonStyle(.borderedProminent)
                 .tint(Color(red: 0.75, green: 0.96, blue: 0.25))
                 .foregroundStyle(Color(red: 0.06, green: 0.10, blue: 0.02))
+
+                if hasActiveMatch {
+                    Button(action: onContinueMatch) {
+                        Label("Maça Devam Et", systemImage: "arrow.forward.circle.fill")
+                            .font(.system(size: 13, weight: .bold))
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                }
             }
             .padding(.horizontal, 8)
         }
@@ -53,6 +72,7 @@ private struct WatchQuickStartView: View {
 private struct WatchQuickMatchSetupView: View {
     @EnvironmentObject private var store: MatchStore
     @Environment(\.dismiss) private var dismiss
+    let onStartMatch: () -> Void
     @State private var format: MatchFormat = .bestOfThree
     @State private var rule: ScoringRule = .advantage
     @State private var firstServerIndex = 0
@@ -95,6 +115,7 @@ private struct WatchQuickMatchSetupView: View {
                     firstServerIndex: firstServerIndex
                 )
                 dismiss()
+                onStartMatch()
             } label: {
                 Label("Başlat", systemImage: "play.fill")
                     .font(.headline)
@@ -104,6 +125,120 @@ private struct WatchQuickMatchSetupView: View {
             .foregroundStyle(Color(red: 0.06, green: 0.10, blue: 0.02))
         }
         .navigationTitle("Hızlı Maç")
+    }
+}
+
+private struct WatchPadelMarkIcon: View {
+    var body: some View {
+        ZStack {
+            racket
+                .rotationEffect(.degrees(-22))
+                .offset(x: -4, y: -3)
+
+            ball
+                .frame(width: 17, height: 17)
+                .offset(x: 12, y: 12)
+        }
+        .shadow(color: .black.opacity(0.36), radius: 7, y: 4)
+        .accessibilityHidden(true)
+    }
+
+    private var racket: some View {
+        ZStack {
+            Ellipse()
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color(red: 0.92, green: 0.97, blue: 1.0),
+                            Color(red: 0.45, green: 0.52, blue: 0.60),
+                            Color(red: 0.12, green: 0.15, blue: 0.20)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .frame(width: 24, height: 32)
+                .overlay(
+                    Ellipse()
+                        .stroke(
+                            LinearGradient(
+                                colors: [.white, Color(red: 0.55, green: 0.62, blue: 0.70)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 2
+                        )
+                )
+
+            Ellipse()
+                .fill(Color(red: 0.06, green: 0.09, blue: 0.14).opacity(0.72))
+                .frame(width: 16, height: 23)
+
+            VStack(spacing: 3) {
+                HStack(spacing: 4) {
+                    hole
+                    hole
+                    hole
+                }
+                HStack(spacing: 4) {
+                    hole
+                    hole
+                    hole
+                }
+                HStack(spacing: 4) {
+                    hole
+                    hole
+                }
+            }
+            .offset(y: -2)
+
+            RoundedRectangle(cornerRadius: 3)
+                .fill(Color(red: 0.86, green: 0.90, blue: 0.94))
+                .frame(width: 7, height: 18)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 2.5)
+                        .fill(Color(red: 0.08, green: 0.11, blue: 0.16))
+                        .frame(width: 4, height: 15)
+                )
+                .offset(y: 24)
+        }
+    }
+
+    private var hole: some View {
+        Circle()
+            .fill(Color(red: 0.56, green: 0.63, blue: 0.70))
+            .frame(width: 2.5, height: 2.5)
+    }
+
+    private var ball: some View {
+        ZStack {
+            Circle()
+                .fill(
+                    RadialGradient(
+                        colors: [
+                            Color(red: 0.95, green: 1.0, blue: 0.54),
+                            Color(red: 0.78, green: 0.96, blue: 0.24),
+                            Color(red: 0.56, green: 0.79, blue: 0.09)
+                        ],
+                        center: .topLeading,
+                        startRadius: 1,
+                        endRadius: 17
+                    )
+                )
+                .overlay(Circle().stroke(Color(red: 0.92, green: 1.0, blue: 0.47), lineWidth: 1.4))
+
+            Capsule()
+                .stroke(Color(red: 0.49, green: 0.67, blue: 0.08), lineWidth: 1.2)
+                .frame(width: 15, height: 3)
+                .rotationEffect(.degrees(-24))
+                .offset(y: -3)
+
+            Capsule()
+                .stroke(Color(red: 0.49, green: 0.67, blue: 0.08), lineWidth: 1.2)
+                .frame(width: 15, height: 3)
+                .rotationEffect(.degrees(24))
+                .offset(y: 3)
+        }
     }
 }
 
@@ -124,15 +259,15 @@ private struct WatchMatchView: View {
                 workout.startWorkout()
             }
         }
-        .onChange(of: Int(workout.metrics.duration / 15)) { _, _ in
+        .onChange(of: Int(workout.metrics.duration / 15)) { _ in
             store.updateWorkoutMetrics(workout.metrics)
         }
-        .onChange(of: match.isFinished) { _, finished in
+        .onChange(of: match.isFinished) { finished in
             guard finished else { return }
             store.updateWorkoutMetrics(workout.metrics)
             workout.endWorkout()
         }
-        .onChange(of: workout.isRunning) { _, running in
+        .onChange(of: workout.isRunning) { running in
             if !running { store.updateWorkoutMetrics(workout.metrics) }
         }
         .overlay {
@@ -142,100 +277,136 @@ private struct WatchMatchView: View {
                     Text("Kazanan").font(.caption)
                     Text(match.teamName(winner)).font(.caption.bold()).multilineTextAlignment(.center)
                 }
-                .padding().background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+                .padding()
+                .background(Color.black.opacity(0.72), in: RoundedRectangle(cornerRadius: 16))
             }
         }
     }
 
     private var scoreboardPage: some View {
-        VStack(spacing: 12) {
-            scoreHeader
+        ScrollView(.vertical) {
+            VStack(spacing: 8) {
+                scoreHeader
 
-            HStack(spacing: 6) {
-                pointButton(.home, color: .cyan)
-                pointButton(.away, color: .orange)
+                HStack(spacing: 6) {
+                    pointButton(.home, color: .cyan)
+                    pointButton(.away, color: .orange)
+                }
+                .frame(maxWidth: 178)
+
+                undoButton
+
+                Spacer()
+                    .frame(height: 6)
+
+                finishButton
             }
-            .frame(width: 174)
-
-            Spacer(minLength: 0)
-
-            Button { store.undo() } label: {
-                Label("Undo", systemImage: "arrow.counterclockwise")
-                    .font(.system(size: 13, weight: .bold))
-                    .foregroundStyle(.white)
-                    .frame(width: 132, height: 42)
-                    .background(
-                        LinearGradient(
-                            colors: [Color(red: 0.68, green: 0.33, blue: 0.96).opacity(0.64),
-                                     Color(red: 0.43, green: 0.20, blue: 0.88).opacity(0.46)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        in: Capsule()
-                    )
-                    .overlay(Capsule().stroke(.white.opacity(0.16), lineWidth: 0.7))
-                    .shadow(color: Color.purple.opacity(0.22), radius: 5, y: 2)
-            }
-            .buttonStyle(WatchUndoButtonStyle())
-            .disabled(match.history.isEmpty)
-            .opacity(match.history.isEmpty ? 0.45 : 1)
+            .frame(maxWidth: .infinity)
+            .padding(.top, -24)
+            .padding(.bottom, 18)
         }
+        .scrollIndicators(.hidden)
         .overlay(alignment: .topTrailing) {
             Image(systemName: "chevron.right")
                 .font(.system(size: 8, weight: .bold))
                 .foregroundStyle(.secondary)
-                .padding(.top, 12)
+                .padding(.top, 8)
         }
     }
 
     private var scoreHeader: some View {
-        VStack(spacing: 0) {
-            Text("SETLER")
-                .font(.system(size: 8, weight: .black))
-                .foregroundStyle(.secondary)
-            Text("\(match.homeSets)–\(match.awaySets)")
-                .font(.system(size: 25, weight: .black, design: .rounded))
-            Text(match.isTieBreak
-                 ? "TIE-BREAK"
-                 : "\(match.completedSets.count + 1). SET  ·  OYUN \(match.currentSet.homeGames)–\(match.currentSet.awayGames)")
-                .font(.system(size: 9, weight: .bold))
-                .foregroundStyle(.secondary)
+        HStack(spacing: 6) {
+            HStack(spacing: 3) {
+                Image(systemName: "stopwatch.fill")
+                    .font(.system(size: 8, weight: .bold))
+                Text(workoutDuration)
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .monospacedDigit()
+            }
+            .foregroundStyle(.yellow)
+            .frame(width: 58, alignment: .leading)
+
+            VStack(spacing: -1) {
+                Text("SETLER")
+                    .font(.system(size: 7, weight: .black))
+                    .foregroundStyle(.secondary)
+                Text("\(match.homeSets)–\(match.awaySets)")
+                    .font(.system(size: 21, weight: .black, design: .rounded))
+                Text(match.isTieBreak
+                     ? "TIE-BREAK"
+                     : "\(match.completedSets.count + 1). SET  ·  OYUN \(match.currentSet.homeGames)–\(match.currentSet.awayGames)")
+                    .font(.system(size: 8, weight: .bold))
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity)
+
+            Color.clear.frame(width: 58)
         }
+        .lineLimit(1)
+    }
+
+    private var undoButton: some View {
+        Button { store.undo() } label: {
+            Label("Undo", systemImage: "arrow.counterclockwise")
+                .font(.system(size: 13, weight: .bold))
+                .foregroundStyle(.white)
+                .frame(width: 132, height: 34)
+                .background(
+                    LinearGradient(
+                        colors: [Color(red: 0.68, green: 0.33, blue: 0.96).opacity(0.64),
+                                 Color(red: 0.43, green: 0.20, blue: 0.88).opacity(0.46)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    in: Capsule()
+                )
+                .overlay(Capsule().stroke(.white.opacity(0.16), lineWidth: 0.7))
+                .shadow(color: Color.purple.opacity(0.22), radius: 5, y: 2)
+        }
+        .buttonStyle(WatchUndoButtonStyle())
+        .disabled(match.history.isEmpty)
+        .opacity(match.history.isEmpty ? 0.45 : 1)
+    }
+
+    private var finishButton: some View {
+        Button { finishMatch() } label: {
+            Text("Bitir")
+                .font(.system(size: 13, weight: .bold))
+                .foregroundStyle(.white)
+                .frame(width: 132, height: 34)
+                .background(Color.red.opacity(0.88), in: Capsule())
+                .overlay(Capsule().stroke(.white.opacity(0.16), lineWidth: 0.7))
+        }
+        .buttonStyle(WatchUndoButtonStyle())
     }
 
     private var workoutPage: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack {
-                Text("PADEL")
-                    .font(.system(size: 11, weight: .black))
-                    .foregroundStyle(.green)
-                Spacer()
-                Image(systemName: "figure.tennis")
-                    .foregroundStyle(.green)
+        ScrollView(.vertical) {
+            VStack(alignment: .leading, spacing: 7) {
+                HStack(spacing: 5) {
+                    Image(systemName: "figure.tennis")
+                        .font(.system(size: 12, weight: .bold))
+                    Text("PADEL")
+                        .font(.system(size: 12, weight: .black))
+                    Spacer()
+                    Circle()
+                        .fill(workout.isRunning ? Color.green : Color.secondary)
+                        .frame(width: 6, height: 6)
+                }
+                .foregroundStyle(.green)
+                .padding(.bottom, 1)
+
+                workoutMetric("SÜRE", workoutDuration, .yellow, size: 34)
+                workoutMetric("AKTİF KALORİ", "\(Int(workout.metrics.activeCalories)) KCAL", .pink, size: 27)
+                workoutMetric("NABIZ", heartRateText, .red, size: 27)
+                workoutMetric("MESAFE", String(format: "%.2f KM", workout.metrics.distanceMeters / 1000), .cyan, size: 27)
+                workoutMetric("ADIM", "\(workout.metrics.steps)", .green, size: 27)
             }
-
-            Text(workoutDuration)
-                .font(.system(size: 38, weight: .medium, design: .rounded))
-                .foregroundStyle(.yellow)
-                .monospacedDigit()
-
-            Divider().overlay(.white.opacity(0.16))
-
-            LazyVGrid(columns: [.init(.flexible(), alignment: .leading), .init(.flexible(), alignment: .leading)], spacing: 9) {
-                workoutMetric("AKTİF KALORİ", "\(Int(workout.metrics.activeCalories)) KCAL", .pink)
-                workoutMetric("NABIZ", "\(Int(workout.metrics.heartRate)) BPM", .red)
-                workoutMetric("MESAFE", String(format: "%.2f KM", workout.metrics.distanceMeters / 1000), .cyan)
-                workoutMetric("ADIM", "\(workout.metrics.steps)", .green)
-            }
-
-            Spacer(minLength: 0)
-
-            Text("Skora dönmek için sağa kaydır")
-                .font(.system(size: 8, weight: .medium))
-                .foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 7)
+            .padding(.vertical, 3)
         }
-        .padding(.horizontal, 6)
+        .scrollIndicators(.hidden)
     }
 
     private var workoutDuration: String {
@@ -243,40 +414,76 @@ private struct WatchMatchView: View {
         return String(format: "%02d:%02d", total / 60, total % 60)
     }
 
-    private func workoutMetric(_ title: String, _ value: String, _ color: Color) -> some View {
-        VStack(alignment: .leading, spacing: 1) {
+    private var heartRateText: String {
+        workout.metrics.heartRate > 0 ? "\(Int(workout.metrics.heartRate)) BPM" : "-- BPM"
+    }
+
+    private func workoutMetric(_ title: String, _ value: String, _ color: Color, size: CGFloat) -> some View {
+        VStack(alignment: .leading, spacing: -1) {
             Text(title)
-                .font(.system(size: 7, weight: .bold))
+                .font(.system(size: 8, weight: .bold))
                 .foregroundStyle(.secondary)
             Text(value)
-                .font(.system(size: 13, weight: .bold, design: .rounded))
+                .font(.system(size: size, weight: .semibold, design: .rounded))
                 .foregroundStyle(color)
-                .minimumScaleFactor(0.65)
+                .minimumScaleFactor(0.55)
                 .lineLimit(1)
+                .monospacedDigit()
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func finishMatch() {
+        store.updateWorkoutMetrics(workout.metrics)
+        store.finishEarly()
     }
 
     private func pointButton(_ team: Team, color: Color) -> some View {
-        Button { store.awardPoint(to: team) } label: {
-            VStack(spacing: 0) {
+        Button { awardPoint(to: team) } label: {
+            VStack(spacing: 5) {
                 Text(team == .home ? "TAKIM A" : "TAKIM B")
                     .font(.system(size: 9, weight: .black))
-                    .padding(.top, 8)
+                    .padding(.top, 9)
                 Text(match.pointLabel(for: team))
-                    .font(.system(size: 42, weight: .black, design: .rounded))
-                    .padding(.top, 7)
-                VStack(spacing: -2) {
+                    .font(.system(size: 40, weight: .black, design: .rounded))
+                    .minimumScaleFactor(0.45)
+                    .lineLimit(1)
+                    .monospacedDigit()
+                VStack(spacing: 2) {
                     playerRow(name: team == .home ? match.home.first : match.away.first,
                               index: team == .home ? 0 : 1)
                     playerRow(name: team == .home ? match.home.second : match.away.second,
                               index: team == .home ? 2 : 3)
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.top, 14)
+                .padding(.top, 3)
                 .padding(.bottom, 8)
-            }.frame(maxWidth: .infinity, minHeight: 146)
+            }
+            .frame(maxWidth: .infinity, minHeight: 120)
         }
         .buttonStyle(WatchScoreButtonStyle(color: color))
+    }
+
+    private func awardPoint(to team: Team) {
+        let gamesBefore = totalGames(in: match)
+        store.awardPoint(to: team)
+        let gamesAfter = store.activeMatch.map(totalGames(in:)) ?? gamesBefore
+        playScoreHaptic(gameCompleted: gamesAfter > gamesBefore)
+    }
+
+    private func totalGames(in match: PadelMatch) -> Int {
+        let completedGames = match.completedSets.reduce(0) { total, set in
+            total + set.homeGames + set.awayGames
+        }
+        return completedGames + match.currentSet.homeGames + match.currentSet.awayGames
+    }
+
+    private func playScoreHaptic(gameCompleted: Bool) {
+        WKInterfaceDevice.current().play(.directionUp)
+        guard gameCompleted else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.16) {
+            WKInterfaceDevice.current().play(.success)
+        }
     }
 
     private func playerRow(name: String, index: Int) -> some View {
@@ -287,17 +494,17 @@ private struct WatchMatchView: View {
                 Image("TennisBallIcon")
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 11, height: 11)
+                    .frame(width: 9, height: 9)
             }
             Text(name).lineLimit(1).minimumScaleFactor(0.65)
         }
-        .font(.system(size: 10, weight: isServing ? .bold : .semibold, design: .rounded))
-        .tracking(0.05)
+        .font(.system(size: 9, weight: isServing ? .bold : .semibold, design: .rounded))
         .foregroundStyle(isServing
                          ? Color(red: 0.88, green: 1, blue: 0.58)
                          : Color.white.opacity(0.86))
-        .padding(.horizontal, 6)
-        .padding(.vertical, 1)
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 4)
+        .padding(.vertical, 2)
         .background {
             if isServing {
                 Capsule().fill(Color(red: 0.70, green: 1, blue: 0.25).opacity(0.14))
@@ -344,12 +551,10 @@ private struct WatchUndoButtonStyle: ButtonStyle {
     WatchRootView()
         .environmentObject(MatchStore.preview())
         .environmentObject(WorkoutManager.preview(running: false))
-        .previewDevice("Apple Watch Series 9 (45mm)")
 }
 
 #Preview("Watch - Mac") {
     WatchRootView()
         .environmentObject(MatchStore.preview(active: true, scored: true))
         .environmentObject(WorkoutManager.preview())
-        .previewDevice("Apple Watch Series 9 (45mm)")
 }

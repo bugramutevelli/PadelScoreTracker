@@ -139,10 +139,6 @@ struct HomeView: View {
     private func teamCard(title: String, players: Binding<TeamPlayers>, color: Color) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title).font(.caption.bold()).foregroundStyle(color)
-            Text(players.wrappedValue.displayName)
-                .font(.headline)
-                .foregroundStyle(.white)
-                .lineLimit(1)
             TextField("Birinci oyuncu", text: players.first)
                 .foregroundStyle(.white)
             Divider().overlay(.white.opacity(0.10))
@@ -276,5 +272,5 @@ private struct PadelMarkIcon: View {
             .environmentObject(MatchStore.preview())
     }
     .tint(Color(red: 0.75, green: 0.96, blue: 0.25))
-    .previewDevice("iPhone 15 Pro")
 }
+

@@ -29,10 +29,6 @@ final class MatchStore: ObservableObject {
         sync.onActiveMatchRequested = { [weak self] in
             Task { @MainActor in self?.broadcast() }
         }
-
-        #if os(watchOS)
-        sync.requestActiveMatch()
-        #endif
     }
 
     func start(home: TeamPlayers, away: TeamPlayers, rule: ScoringRule, format: MatchFormat, firstServerIndex: Int) {

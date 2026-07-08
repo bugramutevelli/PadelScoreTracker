@@ -6,7 +6,17 @@ struct RootView: View {
     var body: some View {
         TabView {
             NavigationStack { HomeView() }
-                .tabItem { Label("Oyna", systemImage: "figure.padel") }
+                .tabItem {
+                    Label {
+                        Text("Oyna")
+                    } icon: {
+                        Image("PadelPlayIcon")
+                            .renderingMode(.template)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 22, height: 22)
+                    }
+                }
             NavigationStack { HistoryView() }
                 .tabItem { Label("Geçmiş", systemImage: "clock.arrow.circlepath") }
         }

@@ -32,5 +32,7 @@
 	</array>
 	<key>WKCompanionAppBundleIdentifier</key>
 	<string>com.rallipadel.ios</string>
+	<key>WKRunsIndependentlyOfCompanionApp</key>
+	<true/>
 </dict>
 </plist>

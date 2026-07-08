@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct LiveMatchView: View {
     @EnvironmentObject private var store: MatchStore
@@ -97,7 +98,7 @@ struct LiveMatchView: View {
     }
 
     private func pointButton(_ team: Team, match: PadelMatch, color: Color) -> some View {
-        Button { store.awardPoint(to: team) } label: {
+        Button { awardPoint(to: team, in: match) } label: {
             VStack(spacing: 0) {
                 Text(team == .home ? "TAKIM A" : "TAKIM B")
                     .font(.system(size: 13, weight: .black, design: .rounded))
@@ -123,6 +124,28 @@ struct LiveMatchView: View {
             .frame(maxWidth: .infinity, minHeight: 352)
         }
         .buttonStyle(IPhoneScoreButtonStyle(color: color))
+    }
+
+    private func awardPoint(to team: Team, in match: PadelMatch) {
+        let gamesBefore = totalGames(in: match)
+        store.awardPoint(to: team)
+        let gamesAfter = store.activeMatch.map(totalGames(in:)) ?? gamesBefore
+        playScoreHaptic(gameCompleted: gamesAfter > gamesBefore)
+    }
+
+    private func totalGames(in match: PadelMatch) -> Int {
+        let completedGames = match.completedSets.reduce(0) { total, set in
+            total + set.homeGames + set.awayGames
+        }
+        return completedGames + match.currentSet.homeGames + match.currentSet.awayGames
+    }
+
+    private func playScoreHaptic(gameCompleted: Bool) {
+        UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
+        guard gameCompleted else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.16) {
+            UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
+        }
     }
 
     private func playerRow(name: String, index: Int) -> some View {
@@ -246,5 +269,4 @@ private struct IPhoneUndoButtonStyle: ButtonStyle {
 #Preview("iPhone - Canli Mac") {
     LiveMatchView()
         .environmentObject(MatchStore.preview(active: true, scored: true))
-        .previewDevice("iPhone 15 Pro")
 }
