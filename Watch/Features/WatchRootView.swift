@@ -251,6 +251,7 @@ private struct WatchMatchView: View {
     @EnvironmentObject private var store: MatchStore
     @EnvironmentObject private var workout: WorkoutManager
     let match: PadelMatch
+    @State private var isWinnerCelebrationVisible = false
 
     var body: some View {
         TabView {
@@ -275,15 +276,41 @@ private struct WatchMatchView: View {
         .onChange(of: workout.isRunning) { running in
             if !running { store.updateWorkoutMetrics(workout.metrics) }
         }
+        .onChange(of: store.activeMatch?.winner) { winner in
+            isWinnerCelebrationVisible = winner != nil
+        }
+        .onAppear {
+            isWinnerCelebrationVisible = store.activeMatch?.winner != nil
+        }
         .overlay {
-            if let winner = match.winner {
-                VStack(spacing: 8) {
-                    Image(systemName: "trophy.fill").foregroundStyle(.yellow)
-                    Text("Kazanan").font(.caption)
-                    Text(match.teamName(winner)).font(.caption.bold()).multilineTextAlignment(.center)
+            if isWinnerCelebrationVisible,
+               let activeMatch = store.activeMatch,
+               let winner = activeMatch.winner {
+                ZStack {
+                    Color.black.opacity(0.76)
+
+                    WatchConfettiBurst()
+                        .allowsHitTesting(false)
+
+                    VStack(spacing: 8) {
+                        Image(systemName: "trophy.fill")
+                            .font(.title2)
+                            .foregroundStyle(.yellow)
+                        Text("Kazanan")
+                            .font(.caption)
+                        Text(activeMatch.teamName(winner))
+                            .font(.caption.bold())
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding()
                 }
-                .padding()
-                .background(Color.black.opacity(0.72), in: RoundedRectangle(cornerRadius: 16))
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    withAnimation(.easeOut(duration: 0.2)) {
+                        isWinnerCelebrationVisible = false
+                    }
+                }
+                .transition(.opacity)
             }
         }
     }
@@ -519,6 +546,36 @@ private struct WatchMatchView: View {
         .overlay {
             if isServing {
                 Capsule().stroke(Color(red: 0.74, green: 1, blue: 0.32).opacity(0.28), lineWidth: 0.7)
+            }
+        }
+    }
+}
+
+private struct WatchConfettiBurst: View {
+    @State private var isBursting = false
+
+    private let colors: [Color] = [.cyan, .yellow, .green, .orange, .pink, .purple]
+
+    var body: some View {
+        ZStack {
+            ForEach(0..<24, id: \.self) { index in
+                let angle = Double(index) * (.pi * 2 / 24) + Double(index % 3) * 0.12
+                let distance = CGFloat(48 + (index % 5) * 8)
+
+                RoundedRectangle(cornerRadius: 1)
+                    .fill(colors[index % colors.count])
+                    .frame(width: index.isMultiple(of: 2) ? 4 : 3, height: 7)
+                    .rotationEffect(.degrees(isBursting ? Double(index * 37) : 0))
+                    .offset(
+                        x: isBursting ? CGFloat(cos(angle)) * distance : 0,
+                        y: isBursting ? CGFloat(sin(angle)) * distance : 0
+                    )
+                    .opacity(isBursting ? 0 : 1)
+            }
+        }
+        .onAppear {
+            withAnimation(.easeOut(duration: 1.15)) {
+                isBursting = true
             }
         }
     }
