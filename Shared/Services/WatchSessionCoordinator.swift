@@ -4,12 +4,34 @@ import WatchConnectivity
 
 final class WatchSessionCoordinator: NSObject, ObservableObject, WCSessionDelegate {
     static let shared = WatchSessionCoordinator()
-    var onMatchReceived: ((PadelMatch) -> Void)?
-    var onMatchCleared: (() -> Void)?
-    var onActiveMatchRequested: (() -> Void)?
+    var onMatchReceived: ((PadelMatch) -> Void)? {
+        didSet {
+            guard let pendingMatch, let onMatchReceived else { return }
+            self.pendingMatch = nil
+            onMatchReceived(pendingMatch)
+        }
+    }
+    var onMatchCleared: (() -> Void)? {
+        didSet {
+            guard hasPendingClear, let onMatchCleared else { return }
+            hasPendingClear = false
+            onMatchCleared()
+        }
+    }
+    var onActiveMatchRequested: (() -> Void)? {
+        didSet {
+            guard hasPendingActiveMatchRequest, let onActiveMatchRequested else { return }
+            hasPendingActiveMatchRequest = false
+            onActiveMatchRequested()
+        }
+    }
 
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
+    private var pendingMatch: PadelMatch?
+    private var hasPendingClear = false
+    private var hasPendingActiveMatchRequest = false
+    private var pendingApplicationContext: [String: Any]?
 
     private override init() {
         super.init()
@@ -23,7 +45,7 @@ final class WatchSessionCoordinator: NSObject, ObservableObject, WCSessionDelega
         guard WCSession.isSupported() else { return }
         guard let data = try? encoder.encode(match) else { return }
         let payload: [String: Any] = ["match": data]
-        try? WCSession.default.updateApplicationContext(payload)
+        updateApplicationContext(payload)
         if WCSession.default.isReachable {
             WCSession.default.sendMessage(payload, replyHandler: nil, errorHandler: nil)
         }
@@ -32,7 +54,7 @@ final class WatchSessionCoordinator: NSObject, ObservableObject, WCSessionDelega
     func clearMatch() {
         guard WCSession.isSupported() else { return }
         let payload: [String: Any] = ["clear": true]
-        try? WCSession.default.updateApplicationContext(payload)
+        updateApplicationContext(payload)
         if WCSession.default.isReachable {
             WCSession.default.sendMessage(payload, replyHandler: nil, errorHandler: nil)
         }
@@ -62,21 +84,59 @@ final class WatchSessionCoordinator: NSObject, ObservableObject, WCSessionDelega
 
     private func receive(_ payload: [String: Any]) {
         if payload["requestActiveMatch"] as? Bool == true {
-            DispatchQueue.main.async { [weak self] in self?.onActiveMatchRequested?() }
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
+                if let onActiveMatchRequested {
+                    onActiveMatchRequested()
+                } else {
+                    hasPendingActiveMatchRequest = true
+                }
+            }
             return
         }
 
         if payload["clear"] as? Bool == true {
-            DispatchQueue.main.async { [weak self] in self?.onMatchCleared?() }
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
+                pendingMatch = nil
+                if let onMatchCleared {
+                    onMatchCleared()
+                } else {
+                    hasPendingClear = true
+                }
+            }
             return
         }
 
         guard let data = payload["match"] as? Data,
               let match = try? decoder.decode(PadelMatch.self, from: data) else { return }
-        DispatchQueue.main.async { [weak self] in self?.onMatchReceived?(match) }
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            hasPendingClear = false
+            if let onMatchReceived {
+                onMatchReceived(match)
+            } else {
+                pendingMatch = match
+            }
+        }
     }
 
-    func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {}
+    private func updateApplicationContext(_ payload: [String: Any]) {
+        do {
+            try WCSession.default.updateApplicationContext(payload)
+            pendingApplicationContext = nil
+        } catch {
+            pendingApplicationContext = payload
+        }
+    }
+
+    func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
+        guard activationState == .activated else { return }
+        DispatchQueue.main.async { [weak self] in
+            guard let self, let payload = pendingApplicationContext else { return }
+            updateApplicationContext(payload)
+        }
+    }
 
     #if os(iOS)
     func sessionDidBecomeInactive(_ session: WCSession) {}
