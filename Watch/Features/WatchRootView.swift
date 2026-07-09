@@ -560,7 +560,7 @@ private struct WatchWinnerCelebration: View {
                 WatchConfettiBurst()
             }
 
-            VStack(spacing: 7) {
+            VStack(spacing: 14) {
                 ZStack {
                     Capsule()
                         .fill(
@@ -585,24 +585,29 @@ private struct WatchWinnerCelebration: View {
                         .scaleEffect(ballScale)
                         .offset(x: ballOffset)
                 }
-                .frame(height: 38)
+                .frame(height: 42)
 
-                VStack(spacing: 4) {
+                VStack(spacing: 0) {
                     Image(systemName: "trophy.fill")
                         .font(.title2)
                         .foregroundStyle(.yellow)
-                    Text("Kazanan")
-                        .font(.system(size: 11, weight: .semibold))
+                        .padding(.bottom, 5)
+                    Text("KAZANAN")
+                        .font(.system(size: 9, weight: .bold))
+                        .tracking(0.8)
                         .foregroundStyle(.secondary)
+                        .padding(.bottom, 4)
                     Text(teamTitle)
-                        .font(.caption.bold())
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundStyle(.white)
                         .multilineTextAlignment(.center)
+                        .padding(.bottom, 7)
                     VStack(spacing: 1) {
                         Text(playerOne)
                         Text(playerTwo)
                     }
                     .font(.system(size: 10, weight: .semibold))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.white.opacity(0.72))
                     .multilineTextAlignment(.center)
                     .lineLimit(1)
                 }
