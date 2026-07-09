@@ -289,20 +289,8 @@ private struct WatchMatchView: View {
                 ZStack {
                     Color.black.opacity(0.76)
 
-                    WatchConfettiBurst()
+                    WatchWinnerCelebration(teamName: activeMatch.teamName(winner))
                         .allowsHitTesting(false)
-
-                    VStack(spacing: 8) {
-                        Image(systemName: "trophy.fill")
-                            .font(.title2)
-                            .foregroundStyle(.yellow)
-                        Text("Kazanan")
-                            .font(.caption)
-                        Text(activeMatch.teamName(winner))
-                            .font(.caption.bold())
-                            .multilineTextAlignment(.center)
-                    }
-                    .padding()
                 }
                 .contentShape(Rectangle())
                 .onTapGesture {
@@ -547,6 +535,80 @@ private struct WatchMatchView: View {
             if isServing {
                 Capsule().stroke(Color(red: 0.74, green: 1, blue: 0.32).opacity(0.28), lineWidth: 0.7)
             }
+        }
+    }
+}
+
+private struct WatchWinnerCelebration: View {
+    let teamName: String
+
+    @State private var ballOffset: CGFloat = -130
+    @State private var ballScale: CGFloat = 0.8
+    @State private var trailOpacity = 0.9
+    @State private var isWinnerVisible = false
+    @State private var isConfettiVisible = false
+
+    var body: some View {
+        ZStack {
+            if isConfettiVisible {
+                WatchConfettiBurst()
+            }
+
+            VStack(spacing: 7) {
+                ZStack {
+                    HStack(spacing: 3) {
+                        ForEach(0..<4, id: \.self) { index in
+                            Capsule()
+                                .fill(Color(red: 0.75, green: 0.96, blue: 0.25)
+                                    .opacity(0.12 + Double(index) * 0.14))
+                                .frame(width: CGFloat(9 + index * 4), height: 3)
+                        }
+                    }
+                    .offset(x: ballOffset - 35)
+                    .opacity(trailOpacity)
+
+                    Image(systemName: "tennisball.fill")
+                        .font(.system(size: 29, weight: .bold))
+                        .foregroundStyle(Color(red: 0.78, green: 0.96, blue: 0.24))
+                        .shadow(color: Color.green.opacity(0.7), radius: 8)
+                        .scaleEffect(ballScale)
+                        .offset(x: ballOffset)
+                }
+                .frame(height: 38)
+
+                VStack(spacing: 4) {
+                    Image(systemName: "trophy.fill")
+                        .font(.headline)
+                        .foregroundStyle(.yellow)
+                    Text("Kazanan")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                    Text(teamName)
+                        .font(.caption.bold())
+                        .multilineTextAlignment(.center)
+                }
+                .opacity(isWinnerVisible ? 1 : 0)
+                .scaleEffect(isWinnerVisible ? 1 : 0.86)
+            }
+            .padding()
+        }
+        .task {
+            withAnimation(.easeOut(duration: 0.42)) {
+                ballOffset = 0
+                trailOpacity = 0
+            }
+
+            try? await Task.sleep(for: .milliseconds(380))
+            withAnimation(.spring(response: 0.28, dampingFraction: 0.42)) {
+                ballScale = 1.3
+            }
+
+            try? await Task.sleep(for: .milliseconds(150))
+            withAnimation(.spring(response: 0.32, dampingFraction: 0.68)) {
+                ballScale = 1
+                isWinnerVisible = true
+            }
+            isConfettiVisible = true
         }
     }
 }

@@ -9,7 +9,7 @@
     *{box-sizing:border-box}
     body{margin:0;min-height:100vh;display:grid;place-items:center;background:radial-gradient(circle at 28% 20%,#153066,transparent 35%),radial-gradient(circle at 75% 76%,#16434a,transparent 30%),#050812;color:white;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden}
     .layout{display:flex;align-items:center;gap:72px}
-    .copy{width:310px}.eyebrow{color:var(--lime);font-size:12px;font-weight:900;letter-spacing:1.8px}.copy h1{font-size:42px;line-height:1.03;margin:13px 0}.copy p{color:#9da9ba;line-height:1.55}.hint{font-size:12px;color:#6f7b8d;margin-top:24px}
+    .copy{width:310px}.eyebrow{color:var(--lime);font-size:12px;font-weight:900;letter-spacing:1.8px}.copy h1{font-size:42px;line-height:1.03;margin:13px 0}.copy p{color:#9da9ba;line-height:1.55}.hint{font-size:12px;color:#6f7b8d;margin-top:24px}.demo{margin-top:18px;border:1px solid #c8f43d66;border-radius:999px;background:#c8f43d18;color:var(--lime);padding:10px 16px;font-weight:850;cursor:pointer}
     .watch-wrap{position:relative;padding:74px 0}.strap{position:absolute;left:50%;translate:-50%;top:-115px;width:175px;height:650px;border-radius:60px;background:linear-gradient(90deg,#242933,#4b515d 48%,#272d37);box-shadow:inset 0 0 0 3px #666b73}
     .watch{position:relative;width:332px;height:402px;border-radius:88px;background:linear-gradient(145deg,#656b74,#171b21 22%,#101217 77%,#505760);padding:14px;box-shadow:0 40px 90px #000c,inset 0 0 0 2px #777b82}
     .crown{position:absolute;right:-29px;top:92px;width:23px;height:65px;border-radius:10px;background:repeating-linear-gradient(0deg,#363c46 0 3px,#5e6570 3px 5px);box-shadow:4px 0 8px #000}.side{position:absolute;right:-19px;top:177px;width:11px;height:54px;border-radius:5px;background:#3f4650}
@@ -21,6 +21,7 @@
     .score{width:90%;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:8px}.team{height:195px;padding:11px 6px 9px;border:1px solid;border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;cursor:pointer;user-select:none;touch-action:manipulation;transition:transform .10s ease-out,background-color .10s ease-out,box-shadow .10s ease-out}.team:active{transform:scale(1.035)}.a{color:var(--cyan);background:#22d3ee17}.b{color:var(--orange);background:#fb923c17}.a:active{background:#22d3ee38;box-shadow:0 0 15px #22d3ee3d}.b:active{background:#fb923c38;box-shadow:0 0 15px #fb923c3d}.team small{font-size:10px;font-weight:950;letter-spacing:.3px}.team b{font-size:68px;line-height:1;margin:12px 0 11px}.players{width:100%;display:grid;gap:0;margin-top:12px}.player{min-height:16px;width:max-content;max-width:100%;justify-self:center;padding:0 7px;display:flex;justify-content:center;align-items:center;gap:4px;color:#ffffffdc;font-family:ui-rounded,"SF Pro Rounded",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.05px;white-space:nowrap;overflow:hidden;text-align:center;border:1px solid transparent;border-radius:999px}.player.serving{color:#e3ff94;background:#baff3d24;border-color:#c2ff4c45;box-shadow:inset 0 0 8px #b6ff2a12}.ball{width:16px;height:16px;display:inline-block;flex:0 0 16px}.ball img{display:block;width:100%;height:100%;object-fit:contain}.ball.hidden{visibility:hidden}
     .bottom{margin-top:auto;padding-top:8px;display:flex;justify-content:center}.undo{border:1px solid #ffffff28;border-radius:999px;width:72%;height:42px;color:white;background:linear-gradient(135deg,rgba(173,84,245,.64),rgba(109,52,223,.46));backdrop-filter:blur(7px);box-shadow:0 5px 14px #8b3ff02e;cursor:pointer;font-size:13px;font-weight:850;letter-spacing:.2px;display:flex;align-items:center;justify-content:center;gap:7px;touch-action:manipulation;transition:transform .10s ease-out,filter .10s ease-out,opacity .10s ease-out}.undo:active{transform:scale(.94);filter:brightness(1.16);opacity:.86}.undo-icon{font-size:18px;line-height:1;font-weight:900}
     .workout-page{display:flex;flex-direction:column;padding:23px 25px 18px}.workout-head{display:flex;justify-content:space-between;align-items:center;color:#36d45c;font-size:13px;font-weight:950;letter-spacing:.8px}.workout-icon{font-size:19px}.workout-time{color:#ffe600;font-size:54px;line-height:1.05;font-weight:500;font-variant-numeric:tabular-nums;margin:12px 0 10px}.workout-rule{height:1px;background:#ffffff20}.metrics{display:grid;grid-template-columns:1fr 1fr;gap:18px 12px;margin-top:17px}.metric{text-align:left}.metric small{display:block;color:#7e8999;font-size:8px;font-weight:850;letter-spacing:.5px}.metric strong{display:block;font-size:17px;line-height:1.2;margin-top:2px}.pink{color:#ff375f}.red{color:#ff453a}.cyan{color:#64d2ff}.green{color:#32d74b}.back-hint{margin-top:auto;border:0;background:transparent;text-align:center;color:#687384;font-size:9px;cursor:pointer}
+    .celebration{position:absolute;inset:0;z-index:20;display:none;place-items:center;background:#020307e8;cursor:pointer}.celebration.show{display:grid}.winner-copy{position:relative;z-index:3;text-align:center;opacity:0;transform:scale(.86)}.celebration.run .winner-copy{animation:winner-in .34s .54s cubic-bezier(.2,.8,.3,1.35) forwards}.winner-copy .trophy{color:#ffd60a;font-size:25px}.winner-copy small{display:block;color:#9ca6b7;font-size:10px;margin:4px}.winner-copy strong{display:block;font-size:15px}.flying-ball{position:absolute;z-index:4;left:50%;top:93px;width:35px;height:35px;margin-left:-18px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#efff88 0 18%,#c8f43d 45%,#7fb810 100%);box-shadow:0 0 16px #89ff42aa;transform:translateX(-190px) scale(.8)}.flying-ball:after{content:"";position:absolute;inset:7px -1px;border-top:2px solid #6d9418;border-bottom:2px solid #6d9418;border-radius:50%;transform:rotate(-25deg)}.celebration.run .flying-ball{animation:ball-flight .72s cubic-bezier(.13,.75,.2,1) forwards}.trail{position:absolute;z-index:2;left:50%;top:108px;width:120px;height:6px;margin-left:-175px;border-radius:999px;background:linear-gradient(90deg,transparent,#93db1b22,#c8f43dcc);transform-origin:right}.celebration.run .trail{animation:trail-pass .52s ease-out forwards}.confetti{position:absolute;inset:0;z-index:2}.confetti i{position:absolute;left:50%;top:48%;width:5px;height:9px;border-radius:1px;background:var(--c);opacity:0}.celebration.run .confetti i{animation:confetti-pop .85s .72s ease-out forwards;transform:rotate(var(--r))}.dismiss-hint{position:absolute;bottom:26px;color:#667183;font-size:9px;opacity:0}.celebration.run .dismiss-hint{animation:fade-in .3s 1.25s forwards}@keyframes ball-flight{0%{transform:translateX(-190px) scale(.8)}68%{transform:translateX(0) scale(.88)}84%{transform:translateX(0) translateY(8px) scale(1.3,.72)}100%{transform:translateX(0) translateY(0) scale(1)}}@keyframes trail-pass{0%{opacity:1;transform:scaleX(1)}100%{opacity:0;transform:translateX(130px) scaleX(.18)}}@keyframes winner-in{to{opacity:1;transform:scale(1)}}@keyframes fade-in{to{opacity:1}}@keyframes confetti-pop{0%{opacity:1;transform:translate(0,0) rotate(var(--r))}100%{opacity:0;transform:translate(var(--x),var(--y)) rotate(calc(var(--r) + 220deg))}}
     @media(max-width:780px){.copy{display:none}.layout{transform:scale(.82)}.watch-wrap{padding:0}.strap{top:-155px}}
   </style>
 </head>
@@ -31,6 +32,7 @@
       <h1>Saatten hızlı maç başlat.</h1>
       <p>Oyuncular varsayılan gelir. Watch üzerinde sadece format, puanlama ve ilk servis seçilir; iPhone’dan başlatılırsa iPhone’daki ayarlar geçerli olur.</p>
       <div class="hint">Önce hızlı maç ekranını, sonra skor kartlarını dene.</div>
+      <button class="demo" onclick="previewCelebration()">Kutlamayı Önizle</button>
     </section>
     <div class="watch-wrap">
       <div class="strap"></div>
@@ -108,6 +110,17 @@
               </section>
             </div>
           </section>
+          <section class="celebration" id="celebration" onclick="hideCelebration()">
+            <div class="trail"></div>
+            <div class="flying-ball"></div>
+            <div class="confetti" id="confetti"></div>
+            <div class="winner-copy">
+              <div class="trophy">★</div>
+              <small>Kazanan</small>
+              <strong id="winnerName">Takım A</strong>
+            </div>
+            <div class="dismiss-hint">Kapatmak için dokun</div>
+          </section>
         </section>
       </div>
     </div>
@@ -128,9 +141,14 @@
     function undo(){if(history.length){s=history.pop();render()}}
     function label(t){if(s.tieBreak)return String(s[t]);const o=t==='a'?'b':'a';if(s.rule==='starPoint'&&isDeciding())return'★';if(s.rule!=='goldenPoint'&&s[t]>=3&&s[o]>=3){if(s[t]===s[o])return'40';return s[t]>s[o]?'AV':'40'}return labels[Math.min(s[t],3)]}
     function playerLine(name,index){const serving=s.server===index;return `<div class="player ${serving?'serving':''}"><span class="ball ${serving?'':'hidden'}"><img src="tennis-ball.png" alt=""></span><span>${name}</span></div>`}
-    function render(){pa.textContent=label('a');pb.textContent=label('b');sa.textContent=s.sa;sb.textContent=s.sb;matchLine.textContent=s.winner?`TAKIM ${s.winner==='a'?'A':'B'} KAZANDI`:s.tieBreak?'TIE-BREAK':`${s.sa+s.sb+1}. SET · OYUN ${s.ga}–${s.gb}`;playersA.innerHTML=playerLine(servers[0],0)+playerLine(servers[2],2);playersB.innerHTML=playerLine(servers[1],1)+playerLine(servers[3],3)}
+    function render(){pa.textContent=label('a');pb.textContent=label('b');sa.textContent=s.sa;sb.textContent=s.sb;matchLine.textContent=s.winner?`TAKIM ${s.winner==='a'?'A':'B'} KAZANDI`:s.tieBreak?'TIE-BREAK':`${s.sa+s.sb+1}. SET · OYUN ${s.ga}–${s.gb}`;playersA.innerHTML=playerLine(servers[0],0)+playerLine(servers[2],2);playersB.innerHTML=playerLine(servers[1],1)+playerLine(servers[3],3);if(s.winner)showCelebration(s.winner)}
+    function makeConfetti(){const colors=['#22d3ee','#ffd60a','#32d74b','#fb923c','#ff375f','#bf5af2'];confetti.innerHTML=Array.from({length:28},(_,i)=>{const angle=(Math.PI*2*i/28)+(i%3)*.1,dist=70+(i%5)*10,x=Math.cos(angle)*dist,y=Math.sin(angle)*dist;return `<i style="--c:${colors[i%colors.length]};--x:${x}px;--y:${y}px;--r:${i*41}deg"></i>`}).join('')}
+    function showCelebration(team='a'){winnerName.textContent=`Takım ${team==='a'?'A':'B'}`;makeConfetti();celebration.classList.remove('run');celebration.classList.add('show');void celebration.offsetWidth;celebration.classList.add('run')}
+    function hideCelebration(){celebration.classList.remove('show','run')}
+    function previewCelebration(){view('matchView');currentPage=0;showPage();showCelebration('a')}
     function showPage(){pages.style.transform=`translateX(-${currentPage*50}%)`}function setPage(page){currentPage=page;showPage()}
     screen.addEventListener('pointerdown',e=>startX=e.clientX);screen.addEventListener('pointerup',e=>{const dx=e.clientX-startX;if(matchView.style.display!=='none'&&Math.abs(dx)>35){currentPage=dx<0?1:0;showPage()}});
+    if(new URLSearchParams(location.search).has('celebration'))setTimeout(previewCelebration,180);
   </script>
 </body>
 </html>
