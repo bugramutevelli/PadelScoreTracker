@@ -18,7 +18,9 @@ struct WatchRootView: View {
             }
         }
         .onChange(of: store.activeMatch?.id) { matchID in
-            if matchID == nil {
+            if matchID != nil {
+                isShowingMatch = true
+            } else {
                 isShowingMatch = false
                 if workout.isRunning {
                     workout.endWorkout()
@@ -26,6 +28,9 @@ struct WatchRootView: View {
             }
         }
         .task {
+            if store.activeMatch != nil {
+                isShowingMatch = true
+            }
             store.requestActiveMatch()
         }
     }
