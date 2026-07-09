@@ -320,16 +320,18 @@ private struct WatchMatchView: View {
     }
 
     private var scoreHeader: some View {
-        ZStack(alignment: .leading) {
+        let liveMatch = store.activeMatch ?? match
+
+        return ZStack(alignment: .leading) {
             VStack(spacing: -1) {
                 Text("SETLER")
                     .font(.system(size: 7, weight: .black))
                     .foregroundStyle(.secondary)
-                Text("\(match.homeSets)–\(match.awaySets)")
+                Text("\(liveMatch.homeSets)–\(liveMatch.awaySets)")
                     .font(.system(size: 21, weight: .black, design: .rounded))
-                Text(match.isTieBreak
+                Text(liveMatch.isTieBreak
                      ? "TIE-BREAK"
-                     : "\(match.completedSets.count + 1). SET  ·  OYUN \(match.currentSet.homeGames)–\(match.currentSet.awayGames)")
+                     : "\(liveMatch.completedSets.count + 1). SET  ·  OYUN \(liveMatch.currentSet.homeGames)–\(liveMatch.currentSet.awayGames)")
                     .font(.system(size: 8, weight: .bold))
                     .foregroundStyle(.secondary)
                     .minimumScaleFactor(0.8)
