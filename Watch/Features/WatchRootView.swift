@@ -289,7 +289,10 @@ private struct WatchMatchView: View {
                 ZStack {
                     Color.black.opacity(0.76)
 
-                    WatchWinnerCelebration(teamName: activeMatch.teamName(winner))
+                    WatchWinnerCelebration(
+                        teamTitle: winner == .home ? "Takım A" : "Takım B",
+                        playerNames: activeMatch.teamName(winner)
+                    )
                         .allowsHitTesting(false)
                 }
                 .contentShape(Rectangle())
@@ -540,7 +543,8 @@ private struct WatchMatchView: View {
 }
 
 private struct WatchWinnerCelebration: View {
-    let teamName: String
+    let teamTitle: String
+    let playerNames: String
 
     @State private var ballOffset: CGFloat = -130
     @State private var ballScale: CGFloat = 0.8
@@ -556,19 +560,23 @@ private struct WatchWinnerCelebration: View {
 
             VStack(spacing: 7) {
                 ZStack {
-                    HStack(spacing: 3) {
-                        ForEach(0..<4, id: \.self) { index in
-                            Capsule()
-                                .fill(Color(red: 0.75, green: 0.96, blue: 0.25)
-                                    .opacity(0.12 + Double(index) * 0.14))
-                                .frame(width: CGFloat(9 + index * 4), height: 3)
-                        }
-                    }
-                    .offset(x: ballOffset - 35)
+                    Capsule()
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    Color.green.opacity(0),
+                                    Color(red: 0.75, green: 0.96, blue: 0.25).opacity(0.75)
+                                ],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .frame(width: 78, height: 5)
+                        .offset(x: ballOffset - 52)
                     .opacity(trailOpacity)
 
                     Image(systemName: "tennisball.fill")
-                        .font(.system(size: 29, weight: .bold))
+                        .font(.system(size: 35, weight: .bold))
                         .foregroundStyle(Color(red: 0.78, green: 0.96, blue: 0.24))
                         .shadow(color: Color.green.opacity(0.7), radius: 8)
                         .scaleEffect(ballScale)
@@ -578,14 +586,19 @@ private struct WatchWinnerCelebration: View {
 
                 VStack(spacing: 4) {
                     Image(systemName: "trophy.fill")
-                        .font(.headline)
+                        .font(.title2)
                         .foregroundStyle(.yellow)
                     Text("Kazanan")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
-                    Text(teamName)
+                    Text(teamTitle)
                         .font(.caption.bold())
                         .multilineTextAlignment(.center)
+                    Text(playerNames)
+                        .font(.system(size: 9, weight: .semibold))
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(2)
                 }
                 .opacity(isWinnerVisible ? 1 : 0)
                 .scaleEffect(isWinnerVisible ? 1 : 0.86)
