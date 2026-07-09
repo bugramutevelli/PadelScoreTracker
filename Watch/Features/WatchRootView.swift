@@ -291,7 +291,8 @@ private struct WatchMatchView: View {
 
                     WatchWinnerCelebration(
                         teamTitle: winner == .home ? "Takım A" : "Takım B",
-                        playerNames: activeMatch.teamName(winner)
+                        playerOne: winner == .home ? activeMatch.home.first : activeMatch.away.first,
+                        playerTwo: winner == .home ? activeMatch.home.second : activeMatch.away.second
                     )
                         .allowsHitTesting(false)
                 }
@@ -544,7 +545,8 @@ private struct WatchMatchView: View {
 
 private struct WatchWinnerCelebration: View {
     let teamTitle: String
-    let playerNames: String
+    let playerOne: String
+    let playerTwo: String
 
     @State private var ballOffset: CGFloat = -130
     @State private var ballScale: CGFloat = 0.8
@@ -565,15 +567,16 @@ private struct WatchWinnerCelebration: View {
                             LinearGradient(
                                 colors: [
                                     Color.green.opacity(0),
-                                    Color(red: 0.75, green: 0.96, blue: 0.25).opacity(0.75)
+                                    Color(red: 0.75, green: 0.96, blue: 0.25).opacity(0.95)
                                 ],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
                         )
-                        .frame(width: 78, height: 5)
+                        .frame(width: 88, height: 7)
                         .offset(x: ballOffset - 52)
-                    .opacity(trailOpacity)
+                        .shadow(color: Color.green.opacity(0.65), radius: 5)
+                        .opacity(trailOpacity)
 
                     Image(systemName: "tennisball.fill")
                         .font(.system(size: 35, weight: .bold))
@@ -589,16 +592,19 @@ private struct WatchWinnerCelebration: View {
                         .font(.title2)
                         .foregroundStyle(.yellow)
                     Text("Kazanan")
-                        .font(.caption2)
+                        .font(.system(size: 11, weight: .semibold))
                         .foregroundStyle(.secondary)
                     Text(teamTitle)
                         .font(.caption.bold())
                         .multilineTextAlignment(.center)
-                    Text(playerNames)
-                        .font(.system(size: 9, weight: .semibold))
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                        .lineLimit(2)
+                    VStack(spacing: 1) {
+                        Text(playerOne)
+                        Text(playerTwo)
+                    }
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(1)
                 }
                 .opacity(isWinnerVisible ? 1 : 0)
                 .scaleEffect(isWinnerVisible ? 1 : 0.86)
