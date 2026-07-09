@@ -320,17 +320,7 @@ private struct WatchMatchView: View {
     }
 
     private var scoreHeader: some View {
-        HStack(spacing: 6) {
-            HStack(spacing: 3) {
-                Image(systemName: "stopwatch.fill")
-                    .font(.system(size: 8, weight: .bold))
-                Text(workoutDuration)
-                    .font(.system(size: 10, weight: .bold, design: .rounded))
-                    .monospacedDigit()
-            }
-            .foregroundStyle(.yellow)
-            .frame(width: 58, alignment: .leading)
-
+        ZStack(alignment: .leading) {
             VStack(spacing: -1) {
                 Text("SETLER")
                     .font(.system(size: 7, weight: .black))
@@ -342,10 +332,19 @@ private struct WatchMatchView: View {
                      : "\(match.completedSets.count + 1). SET  ·  OYUN \(match.currentSet.homeGames)–\(match.currentSet.awayGames)")
                     .font(.system(size: 8, weight: .bold))
                     .foregroundStyle(.secondary)
+                    .minimumScaleFactor(0.8)
             }
             .frame(maxWidth: .infinity)
 
-            Color.clear.frame(width: 58)
+            HStack(spacing: 3) {
+                Image(systemName: "stopwatch.fill")
+                    .font(.system(size: 8, weight: .bold))
+                Text(workoutDuration)
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .monospacedDigit()
+            }
+            .foregroundStyle(.yellow)
+            .frame(width: 58, alignment: .leading)
         }
         .lineLimit(1)
     }
