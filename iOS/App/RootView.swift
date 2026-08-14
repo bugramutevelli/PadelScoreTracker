@@ -2,6 +2,7 @@ import SwiftUI
 
 struct RootView: View {
     @EnvironmentObject private var store: MatchStore
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         TabView {
@@ -31,5 +32,9 @@ struct RootView: View {
         .toolbarBackground(Color(red: 0.03, green: 0.05, blue: 0.09), for: .tabBar)
         .toolbarBackground(.visible, for: .tabBar)
         .preferredColorScheme(.dark)
+        .onChange(of: scenePhase) { _, phase in
+            guard phase == .active else { return }
+            store.publishActiveMatch()
+        }
     }
 }

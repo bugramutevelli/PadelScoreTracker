@@ -4,6 +4,7 @@ import WatchKit
 struct WatchRootView: View {
     @EnvironmentObject private var store: MatchStore
     @EnvironmentObject private var workout: WorkoutManager
+    @Environment(\.scenePhase) private var scenePhase
     @State private var isShowingMatch = false
 
     var body: some View {
@@ -28,6 +29,13 @@ struct WatchRootView: View {
             }
         }
         .task {
+            if store.activeMatch != nil {
+                isShowingMatch = true
+            }
+            store.requestActiveMatch()
+        }
+        .onChange(of: scenePhase) { phase in
+            guard phase == .active else { return }
             if store.activeMatch != nil {
                 isShowingMatch = true
             }

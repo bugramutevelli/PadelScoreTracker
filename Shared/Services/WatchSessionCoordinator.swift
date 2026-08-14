@@ -133,7 +133,11 @@ final class WatchSessionCoordinator: NSObject, ObservableObject, WCSessionDelega
     func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
         guard activationState == .activated else { return }
         DispatchQueue.main.async { [weak self] in
-            guard let self, let payload = pendingApplicationContext else { return }
+            guard let self else { return }
+            if !session.receivedApplicationContext.isEmpty {
+                receive(session.receivedApplicationContext)
+            }
+            guard let payload = pendingApplicationContext else { return }
             updateApplicationContext(payload)
         }
     }

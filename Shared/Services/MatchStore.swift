@@ -82,6 +82,10 @@ final class MatchStore: ObservableObject {
         sync.requestActiveMatch()
     }
 
+    func publishActiveMatch() {
+        broadcast()
+    }
+
     func delete(at offsets: IndexSet) {
         for index in offsets.sorted(by: >) { matches.remove(at: index) }
         save()
