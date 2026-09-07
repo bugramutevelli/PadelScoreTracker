@@ -23,6 +23,12 @@ Padel Score Tracker, iPhone ve Apple Watch için özgün bir padel skor takip uy
 
 Apple Watch ekranını büyük ve etkileşimli görmek için `Preview/watch.html` dosyasını açın.
 
+## Yakındaki oyuncularla maç session'ı
+
+iPhone canlı maç ekranındaki paylaşım kontrolü 6 haneli bir maç kodu üretir ve host iPhone'u yerel ağda yayınlar. Diğer oyuncular iPhone ana ekranındaki kod alanıyla maça katılır. Skorun resmi kaynağı host iPhone'dur; katılımcı iPhone ve Apple Watch cihazları puan, undo ve bitir komutlarını host'a iletir, host yeni skor durumunu herkese geri yayınlar.
+
+Bu özellik TestFlight ile gerçek cihazlarda denenebilir. İlk bağlantıda iOS yerel ağ izni ister.
+
 ## Projeyi açma
 
 Bu depo, Xcode proje dosyasını tekrarlanabilir biçimde üretmek için XcodeGen kullanır.
@@ -39,6 +45,7 @@ Bu depo, Xcode proje dosyasını tekrarlanabilir biçimde üretmek için XcodeGe
 - `Shared/Engine`: Saf ve test edilebilir padel skor motoru
 - `Shared/Models`: Codable maç durumu ve skor modelleri
 - `Shared/Services`: Yerel JSON kayıt ve WatchConnectivity köprüsü
+- `Shared/Services/NearbyMatchSessionCoordinator.swift`: iPhone-iPhone yakındaki maç session'ı
 - `iOS`: SwiftUI telefon uygulaması
 - `Watch`: SwiftUI saat uygulaması
 - `Tests`: Skor, tie-break, altın puan ve geri alma testleri

@@ -11,6 +11,13 @@ final class WatchSessionCoordinator: NSObject, ObservableObject, WCSessionDelega
             onMatchReceived(pendingMatch)
         }
     }
+    var onCommandReceived: ((MatchSessionCommand) -> Void)? {
+        didSet {
+            guard let pendingCommand, let onCommandReceived else { return }
+            self.pendingCommand = nil
+            onCommandReceived(pendingCommand)
+        }
+    }
     var onMatchCleared: (() -> Void)? {
         didSet {
             guard hasPendingClear, let onMatchCleared else { return }
@@ -29,6 +36,7 @@ final class WatchSessionCoordinator: NSObject, ObservableObject, WCSessionDelega
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
     private var pendingMatch: PadelMatch?
+    private var pendingCommand: MatchSessionCommand?
     private var hasPendingClear = false
     private var hasPendingActiveMatchRequest = false
     private var pendingApplicationContext: [String: Any]?
@@ -57,6 +65,17 @@ final class WatchSessionCoordinator: NSObject, ObservableObject, WCSessionDelega
         updateApplicationContext(payload)
         if WCSession.default.isReachable {
             WCSession.default.sendMessage(payload, replyHandler: nil, errorHandler: nil)
+        }
+    }
+
+    func sendCommand(_ command: MatchSessionCommand) {
+        guard WCSession.isSupported() else { return }
+        guard let data = try? encoder.encode(command) else { return }
+        let payload: [String: Any] = ["command": data]
+        if WCSession.default.isReachable {
+            WCSession.default.sendMessage(payload, replyHandler: nil, errorHandler: nil)
+        } else {
+            WCSession.default.transferUserInfo(payload)
         }
     }
 
@@ -99,10 +118,24 @@ final class WatchSessionCoordinator: NSObject, ObservableObject, WCSessionDelega
             DispatchQueue.main.async { [weak self] in
                 guard let self else { return }
                 pendingMatch = nil
+                pendingCommand = nil
                 if let onMatchCleared {
                     onMatchCleared()
                 } else {
                     hasPendingClear = true
+                }
+            }
+            return
+        }
+
+        if let data = payload["command"] as? Data,
+           let command = try? decoder.decode(MatchSessionCommand.self, from: data) {
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
+                if let onCommandReceived {
+                    onCommandReceived(command)
+                } else {
+                    pendingCommand = command
                 }
             }
             return

@@ -7,6 +7,7 @@ struct HomeView: View {
     @State private var rule: ScoringRule = .advantage
     @State private var format: MatchFormat = .bestOfThree
     @State private var firstServerIndex = 0
+    @State private var joinCode = ""
 
     var body: some View {
         ScrollView {
@@ -21,6 +22,7 @@ struct HomeView: View {
                 }
 
                 hero
+                joinNearbyCard
                 teamCard(title: "TAKIM A", players: $home, color: .cyan)
                 teamCard(title: "TAKIM B", players: $away, color: .orange)
 
@@ -71,6 +73,58 @@ struct HomeView: View {
     }
 
     private var serverNames: [String] { [home.first, away.first, home.second, away.second] }
+
+    private var joinNearbyCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                Image(systemName: "person.2.wave.2.fill")
+                    .foregroundStyle(Color(red: 0.78, green: 0.96, blue: 0.24))
+                Text("Yakındaki Maça Katıl")
+                    .font(.subheadline.bold())
+                    .foregroundStyle(.white)
+                Spacer()
+            }
+
+            HStack(spacing: 10) {
+                TextField("6 haneli kod", text: $joinCode)
+                    .keyboardType(.numberPad)
+                    .textInputAutocapitalization(.never)
+                    .font(.system(size: 18, weight: .black, design: .rounded))
+                    .monospacedDigit()
+                    .foregroundStyle(.white)
+                    .onChange(of: joinCode) { _, value in
+                        joinCode = value.filter(\.isNumber).prefix(6).map(String.init).joined()
+                    }
+
+                Button {
+                    store.joinNearbyMatch(code: joinCode)
+                } label: {
+                    Image(systemName: "arrow.right.circle.fill")
+                        .font(.system(size: 30, weight: .bold))
+                }
+                .disabled(joinCode.count != 6)
+                .opacity(joinCode.count == 6 ? 1 : 0.45)
+            }
+
+            if store.nearbyRole == .participant || store.nearbyErrorMessage != nil {
+                HStack(spacing: 6) {
+                    Image(systemName: store.nearbyErrorMessage == nil ? "antenna.radiowaves.left.and.right" : "exclamationmark.triangle.fill")
+                    Text(store.nearbyErrorMessage ?? store.nearbyStatusText)
+                        .lineLimit(2)
+                    Spacer()
+                    if store.nearbyRole != .solo {
+                        Button("Vazgeç") { store.leaveNearbyMatch() }
+                            .font(.caption.bold())
+                    }
+                }
+                .font(.caption)
+                .foregroundStyle(store.nearbyErrorMessage == nil ? Color.secondary : Color.orange)
+            }
+        }
+        .padding()
+        .background(Color(red: 0.07, green: 0.10, blue: 0.16), in: RoundedRectangle(cornerRadius: 18))
+        .overlay(RoundedRectangle(cornerRadius: 18).stroke(.white.opacity(0.08)))
+    }
 
     private func sectionTitle(_ title: String) -> some View {
         Text(title)
@@ -273,4 +327,3 @@ private struct PadelMarkIcon: View {
     }
     .tint(Color(red: 0.75, green: 0.96, blue: 0.25))
 }
-

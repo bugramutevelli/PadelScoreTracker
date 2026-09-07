@@ -108,6 +108,7 @@ struct WorkoutMetrics: Codable, Equatable, Sendable {
 
 struct PadelMatch: Codable, Identifiable, Equatable, Sendable {
     var id: UUID = UUID()
+    var syncRevision: Int = 0
     var startedAt: Date = Date()
     var endedAt: Date? = nil
     var home: TeamPlayers = .homeDefault
@@ -175,5 +176,88 @@ struct PadelMatch: Codable, Identifiable, Equatable, Sendable {
     var decidingPointLabel: String? {
         guard isDecidingPoint else { return nil }
         return rule == .starPoint ? "STAR POINT" : "GOLDEN POINT"
+    }
+
+    init(
+        id: UUID = UUID(),
+        syncRevision: Int = 0,
+        startedAt: Date = Date(),
+        endedAt: Date? = nil,
+        home: TeamPlayers = .homeDefault,
+        away: TeamPlayers = .awayDefault,
+        rule: ScoringRule = .advantage,
+        format: MatchFormat = .bestOfThree,
+        completedSets: [SetScore] = [],
+        currentSet: SetScore = SetScore(),
+        homePoints: Int = 0,
+        awayPoints: Int = 0,
+        isTieBreak: Bool = false,
+        serverIndex: Int = 0,
+        tieBreakPointsPlayed: Int = 0,
+        winner: Team? = nil,
+        history: [ScoreSnapshot] = [],
+        workoutMetrics: WorkoutMetrics? = nil
+    ) {
+        self.id = id
+        self.syncRevision = syncRevision
+        self.startedAt = startedAt
+        self.endedAt = endedAt
+        self.home = home
+        self.away = away
+        self.rule = rule
+        self.format = format
+        self.completedSets = completedSets
+        self.currentSet = currentSet
+        self.homePoints = homePoints
+        self.awayPoints = awayPoints
+        self.isTieBreak = isTieBreak
+        self.serverIndex = serverIndex
+        self.tieBreakPointsPlayed = tieBreakPointsPlayed
+        self.winner = winner
+        self.history = history
+        self.workoutMetrics = workoutMetrics
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case syncRevision
+        case startedAt
+        case endedAt
+        case home
+        case away
+        case rule
+        case format
+        case completedSets
+        case currentSet
+        case homePoints
+        case awayPoints
+        case isTieBreak
+        case serverIndex
+        case tieBreakPointsPlayed
+        case winner
+        case history
+        case workoutMetrics
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
+        syncRevision = try container.decodeIfPresent(Int.self, forKey: .syncRevision) ?? 0
+        startedAt = try container.decodeIfPresent(Date.self, forKey: .startedAt) ?? Date()
+        endedAt = try container.decodeIfPresent(Date.self, forKey: .endedAt)
+        home = try container.decodeIfPresent(TeamPlayers.self, forKey: .home) ?? .homeDefault
+        away = try container.decodeIfPresent(TeamPlayers.self, forKey: .away) ?? .awayDefault
+        rule = try container.decodeIfPresent(ScoringRule.self, forKey: .rule) ?? .advantage
+        format = try container.decodeIfPresent(MatchFormat.self, forKey: .format) ?? .bestOfThree
+        completedSets = try container.decodeIfPresent([SetScore].self, forKey: .completedSets) ?? []
+        currentSet = try container.decodeIfPresent(SetScore.self, forKey: .currentSet) ?? SetScore()
+        homePoints = try container.decodeIfPresent(Int.self, forKey: .homePoints) ?? 0
+        awayPoints = try container.decodeIfPresent(Int.self, forKey: .awayPoints) ?? 0
+        isTieBreak = try container.decodeIfPresent(Bool.self, forKey: .isTieBreak) ?? false
+        serverIndex = try container.decodeIfPresent(Int.self, forKey: .serverIndex) ?? 0
+        tieBreakPointsPlayed = try container.decodeIfPresent(Int.self, forKey: .tieBreakPointsPlayed) ?? 0
+        winner = try container.decodeIfPresent(Team.self, forKey: .winner)
+        history = try container.decodeIfPresent([ScoreSnapshot].self, forKey: .history) ?? []
+        workoutMetrics = try container.decodeIfPresent(WorkoutMetrics.self, forKey: .workoutMetrics)
     }
 }

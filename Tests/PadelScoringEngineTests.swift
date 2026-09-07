@@ -102,6 +102,34 @@ final class PadelScoringEngineTests: XCTestCase {
         XCTAssertEqual(match.winner, .home)
     }
 
+    func testMatchDecodesLegacyJSONWithoutSyncRevision() throws {
+        let json = """
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "startedAt": 0,
+          "home": { "first": "A", "second": "B" },
+          "away": { "first": "C", "second": "D" },
+          "rule": "advantage",
+          "format": "bestOfThree",
+          "completedSets": [],
+          "currentSet": {
+            "homeGames": 0,
+            "awayGames": 0
+          },
+          "homePoints": 0,
+          "awayPoints": 0,
+          "isTieBreak": false,
+          "serverIndex": 0,
+          "tieBreakPointsPlayed": 0,
+          "history": []
+        }
+        """.data(using: .utf8)!
+
+        let match = try JSONDecoder().decode(PadelMatch.self, from: json)
+        XCTAssertEqual(match.syncRevision, 0)
+        XCTAssertEqual(match.home.displayName, "A & B")
+    }
+
     private func repeatPoint(_ team: Team, _ count: Int, in match: inout PadelMatch) {
         for _ in 0..<count { PadelScoringEngine.awardPoint(to: team, in: &match) }
     }

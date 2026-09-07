@@ -10,6 +10,7 @@ struct LiveMatchView: View {
             if let match = store.activeMatch {
                 VStack(spacing: 18) {
                     topRow(match)
+                    nearbySessionRow
                     scoreHeader(match)
 
                     HStack(spacing: 12) {
@@ -48,6 +49,75 @@ struct LiveMatchView: View {
         }
         .font(.caption.bold())
         .foregroundStyle(.secondary)
+    }
+
+    private var nearbySessionRow: some View {
+        HStack(spacing: 10) {
+            Image(systemName: nearbyIconName)
+                .font(.system(size: 15, weight: .bold))
+                .foregroundStyle(Color(red: 0.78, green: 0.96, blue: 0.24))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(nearbyTitle)
+                    .font(.system(size: 12, weight: .black, design: .rounded))
+                    .foregroundStyle(.white)
+                Text(store.nearbyErrorMessage ?? store.nearbyStatusText)
+                    .font(.caption2)
+                    .foregroundStyle(store.nearbyErrorMessage == nil ? Color.secondary : Color.orange)
+                    .lineLimit(1)
+            }
+
+            Spacer()
+
+            switch store.nearbyRole {
+            case .solo:
+                Button {
+                    store.hostNearbyMatch()
+                } label: {
+                    Label("Paylaş", systemImage: "qrcode")
+                        .font(.caption.bold())
+                }
+                .buttonStyle(.bordered)
+                .tint(Color(red: 0.78, green: 0.96, blue: 0.24))
+            case .host:
+                Text(store.nearbyMatchCode ?? "")
+                    .font(.system(size: 18, weight: .black, design: .rounded))
+                    .monospacedDigit()
+                    .foregroundStyle(Color(red: 0.78, green: 0.96, blue: 0.24))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(.white.opacity(0.08), in: Capsule())
+            case .participant:
+                Button {
+                    store.leaveNearbyMatch()
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 20, weight: .bold))
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(.secondary)
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(Color(red: 0.07, green: 0.10, blue: 0.16), in: RoundedRectangle(cornerRadius: 14))
+        .overlay(RoundedRectangle(cornerRadius: 14).stroke(.white.opacity(0.08)))
+    }
+
+    private var nearbyTitle: String {
+        switch store.nearbyRole {
+        case .solo: "Tek Cihaz"
+        case .host: "Maç Paylaşılıyor"
+        case .participant: "Maça Katıldın"
+        }
+    }
+
+    private var nearbyIconName: String {
+        switch store.nearbyRole {
+        case .solo: "person.2.wave.2"
+        case .host: "antenna.radiowaves.left.and.right"
+        case .participant: "checkmark.circle.fill"
+        }
     }
 
     private func scoreHeader(_ match: PadelMatch) -> some View {

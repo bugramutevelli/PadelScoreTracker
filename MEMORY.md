@@ -27,6 +27,7 @@ Desteklenen maç formatları:
 - `Shared/Engine/PadelScoringEngine.swift`: Saf skor geçişleri, oyun/set/maç tamamlama, tie-break ve undo.
 - `Shared/Services/MatchStore.swift`: UI'nın ana durumu, yerel JSON saklama, arşiv ve cihazlar arası yayın.
 - `Shared/Services/WatchSessionCoordinator.swift`: `WCSession` application context ve canlı mesaj köprüsü.
+- `Shared/Services/NearbyMatchSessionCoordinator.swift`: iOS üzerinde `MultipeerConnectivity` ile yakındaki iPhone maç session'ı.
 - `Shared/Services/WorkoutManager.swift`: Yalnızca watchOS'ta derlenen HealthKit workout yönetimi.
 - `iOS/`: Maç kurulumu, canlı skor ve geçmiş SwiftUI ekranları.
 - `Watch/`: Watch skor ve antrenman ekranları.
@@ -45,12 +46,23 @@ Her iki platform kendi `MatchStore` örneğini çalıştırır. Aktif maç tek b
 6. Karşı cihaz maçı decode eder, kendi store'una uygular, diske yazar ve tekrar yayınlar.
 7. Maç tamamlanınca veya erken bitirilince sonuç `matches.json` arşivine eklenir.
 
-Senkronizasyon şu anda sürüm, sıra numarası veya conflict resolution içermez. İki cihazda çok hızlı eşzamanlı puan verilmesi last-write-wins davranışı oluşturabilir.
+Yakındaki oyuncular için iPhone-iPhone session akışı:
+
+1. Host iPhone canlı maç ekranından `hostNearbyMatch` ile 6 haneli kod üretir.
+2. `NearbyMatchSessionCoordinator`, `_ralli-padel._tcp` servisiyle host'u yerel ağda yayınlar.
+3. Katılımcı iPhone ana ekrandan kodla `joinNearbyMatch` çağırır.
+4. Kod eşleşirse `MCSession` kurulur.
+5. Katılımcı iPhone ve ona bağlı Watch skor hesaplamaz; `awardPoint`, `undo`, `finishEarly` komutlarını host'a iletir.
+6. Host iPhone komutu işler, `syncRevision` artırır ve resmi `PadelMatch` state'ini tüm katılımcılara ve kendi Watch'una yayınlar.
+7. Katılımcı iPhone aldığı resmi state'i kendi Watch'una aktarır.
+
+Watch-to-Watch doğrudan bağlantı yoktur. Her Watch yalnızca kendi iPhone'u ile `WatchConnectivity` üzerinden konuşur.
 
 ## Skor motoru değişmezleri
 
 - Maç bittikten sonra yeni puan kabul edilmez.
 - Her puandan önce snapshot alınır.
+- Host/solo iPhone skor değişiminde `syncRevision` artırır; katılımcı cihazlar host revision'ını izler.
 - Normal oyundan sonra puanlar sıfırlanır ve servis indeksi bir ilerler.
 - Servis sırası `[home.first, away.first, home.second, away.second]` dizisidir.
 - Standart tie-break 7 puan ve en az 2 farkla biter.
@@ -94,6 +106,15 @@ Gerekli yapılandırma:
 - Sağlık kullanım açıklamaları
 
 Clinical Health Records kullanılmadığından `com.apple.developer.healthkit.access = health-records` eklenmemelidir.
+
+## Yakındaki session izinleri
+
+iOS hedefi explicit `iOS/Info.plist` kullanır. Local Network discovery için şu anahtarlar korunmalıdır:
+
+- `NSLocalNetworkUsageDescription`
+- `NSBonjourServices` içinde `_ralli-padel._tcp`
+
+XcodeGen yoksa `.xcodeproj` elle güncellenmiş olabilir; kalıcı kaynak `project.yml` olduğundan yeni dosyalar veya plist ayarları eklenince proje yeniden üretilmelidir.
 
 ## Build ve test
 
@@ -157,7 +178,7 @@ Watch uygulamasındaki genel “This application cannot be installed right now�
 ## Bilinen teknik riskler ve sonraki işler
 
 - WatchConnectivity döngüleri aynı durumu iki cihaz arasında tekrar yayınlayabilir; revision/origin alanı eklenmeli.
-- Senkronizasyon çatışmalarına karşı monoton revision veya olay günlüğü yok.
+- Yakındaki session'da host-authoritative `syncRevision` var; uzun vadede kalıcı event log ve origin device ID eklenmeli.
 - JSON hataları sessizce yutuluyor; kullanıcıya hata ve telemetry katmanı yok.
 - Workout adım sorgusu her saniye çalışıyor; enerji tüketimi için daha seyrek sorgu veya observer yaklaşımı değerlendirilmeli.
 - `finishEarly` kazanan belirlemeden maçı arşivler; geçmiş UI'si erken biten maçı 0-0 set olarak gösterebilir.
