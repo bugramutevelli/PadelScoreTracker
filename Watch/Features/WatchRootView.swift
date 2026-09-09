@@ -704,6 +704,7 @@ private struct WatchUndoButtonStyle: ButtonStyle {
     }
 }
 
+/*
 #Preview("Watch - Hazir") {
     WatchRootView()
         .environmentObject(MatchStore.preview())
@@ -715,3 +716,4 @@ private struct WatchUndoButtonStyle: ButtonStyle {
         .environmentObject(MatchStore.preview(active: true, scored: true))
         .environmentObject(WorkoutManager.preview())
 }
+ */

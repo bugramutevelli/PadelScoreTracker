@@ -335,8 +335,9 @@ private struct IPhoneUndoButtonStyle: ButtonStyle {
             .animation(.easeOut(duration: 0.10), value: configuration.isPressed)
     }
 }
-
-#Preview("iPhone - Canli Mac") {
-    LiveMatchView()
-        .environmentObject(MatchStore.preview(active: true, scored: true))
-}
+/*
+ #Preview("iPhone - Canli Mac") {
+ LiveMatchView()
+ .environmentObject(MatchStore.preview(active: true, scored: true))
+ }
+ */

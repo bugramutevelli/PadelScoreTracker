@@ -319,7 +319,7 @@ private struct PadelMarkIcon: View {
         }
     }
 }
-
+/*
 #Preview("iPhone - Kurulum") {
     NavigationStack {
         HomeView()
@@ -327,3 +327,4 @@ private struct PadelMarkIcon: View {
     }
     .tint(Color(red: 0.75, green: 0.96, blue: 0.25))
 }
+*/
