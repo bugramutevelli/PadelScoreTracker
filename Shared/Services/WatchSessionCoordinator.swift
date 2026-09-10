@@ -18,11 +18,18 @@ final class WatchSessionCoordinator: NSObject, ObservableObject, WCSessionDelega
             onCommandReceived(pendingCommand)
         }
     }
-    var onMatchCleared: (() -> Void)? {
+    var onMatchCleared: ((PadelMatch?) -> Void)? {
         didSet {
-            guard hasPendingClear, let onMatchCleared else { return }
-            hasPendingClear = false
-            onMatchCleared()
+            guard let pendingClearedMatch, let onMatchCleared else { return }
+            self.pendingClearedMatch = nil
+            onMatchCleared(pendingClearedMatch.match)
+        }
+    }
+    var onWorkoutMetricsReceived: ((UUID, WorkoutMetrics) -> Void)? {
+        didSet {
+            guard let pendingWorkoutMetrics, let onWorkoutMetricsReceived else { return }
+            self.pendingWorkoutMetrics = nil
+            onWorkoutMetricsReceived(pendingWorkoutMetrics.matchID, pendingWorkoutMetrics.metrics)
         }
     }
     var onActiveMatchRequested: (() -> Void)? {
@@ -37,7 +44,8 @@ final class WatchSessionCoordinator: NSObject, ObservableObject, WCSessionDelega
     private let decoder = JSONDecoder()
     private var pendingMatch: PadelMatch?
     private var pendingCommand: MatchSessionCommand?
-    private var hasPendingClear = false
+    private var pendingClearedMatch: PendingClearedMatch?
+    private var pendingWorkoutMetrics: PendingWorkoutMetrics?
     private var hasPendingActiveMatchRequest = false
     private var pendingApplicationContext: [String: Any]?
 
@@ -59,12 +67,27 @@ final class WatchSessionCoordinator: NSObject, ObservableObject, WCSessionDelega
         }
     }
 
-    func clearMatch() {
+    func clearMatch(_ match: PadelMatch) {
         guard WCSession.isSupported() else { return }
-        let payload: [String: Any] = ["clear": true]
+        guard let data = try? encoder.encode(match) else { return }
+        let payload: [String: Any] = ["clear": true, "match": data]
         updateApplicationContext(payload)
         if WCSession.default.isReachable {
             WCSession.default.sendMessage(payload, replyHandler: nil, errorHandler: nil)
+        }
+    }
+
+    func sendWorkoutMetrics(_ metrics: WorkoutMetrics, for matchID: UUID) {
+        guard WCSession.isSupported() else { return }
+        guard let data = try? encoder.encode(metrics) else { return }
+        let payload: [String: Any] = [
+            "workoutMetrics": data,
+            "matchID": matchID.uuidString
+        ]
+        if WCSession.default.isReachable {
+            WCSession.default.sendMessage(payload, replyHandler: nil, errorHandler: nil)
+        } else {
+            WCSession.default.transferUserInfo(payload)
         }
     }
 
@@ -115,14 +138,31 @@ final class WatchSessionCoordinator: NSObject, ObservableObject, WCSessionDelega
         }
 
         if payload["clear"] as? Bool == true {
+            let clearedMatch = (payload["match"] as? Data)
+                .flatMap { try? decoder.decode(PadelMatch.self, from: $0) }
             DispatchQueue.main.async { [weak self] in
                 guard let self else { return }
                 pendingMatch = nil
                 pendingCommand = nil
                 if let onMatchCleared {
-                    onMatchCleared()
+                    onMatchCleared(clearedMatch)
                 } else {
-                    hasPendingClear = true
+                    pendingClearedMatch = PendingClearedMatch(match: clearedMatch)
+                }
+            }
+            return
+        }
+
+        if let data = payload["workoutMetrics"] as? Data,
+           let matchIDString = payload["matchID"] as? String,
+           let matchID = UUID(uuidString: matchIDString),
+           let metrics = try? decoder.decode(WorkoutMetrics.self, from: data) {
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
+                if let onWorkoutMetricsReceived {
+                    onWorkoutMetricsReceived(matchID, metrics)
+                } else {
+                    pendingWorkoutMetrics = PendingWorkoutMetrics(matchID: matchID, metrics: metrics)
                 }
             }
             return
@@ -145,7 +185,6 @@ final class WatchSessionCoordinator: NSObject, ObservableObject, WCSessionDelega
               let match = try? decoder.decode(PadelMatch.self, from: data) else { return }
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
-            hasPendingClear = false
             if let onMatchReceived {
                 onMatchReceived(match)
             } else {
@@ -179,4 +218,13 @@ final class WatchSessionCoordinator: NSObject, ObservableObject, WCSessionDelega
     func sessionDidBecomeInactive(_ session: WCSession) {}
     func sessionDidDeactivate(_ session: WCSession) { session.activate() }
     #endif
+}
+
+private struct PendingClearedMatch {
+    let match: PadelMatch?
+}
+
+private struct PendingWorkoutMetrics {
+    let matchID: UUID
+    let metrics: WorkoutMetrics
 }

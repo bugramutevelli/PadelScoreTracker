@@ -127,7 +127,7 @@ struct PadelMatch: Codable, Identifiable, Equatable, Sendable {
     var workoutMetrics: WorkoutMetrics? = nil
 
     var duration: TimeInterval { (endedAt ?? Date()).timeIntervalSince(startedAt) }
-    var isFinished: Bool { winner != nil }
+    var isFinished: Bool { winner != nil || endedAt != nil }
     var homeSets: Int { completedSets.filter { $0.homeGames > $0.awayGames }.count }
     var awaySets: Int { completedSets.filter { $0.awayGames > $0.homeGames }.count }
 

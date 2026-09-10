@@ -40,10 +40,10 @@ Her iki platform kendi `MatchStore` örneğini çalıştırır. Aktif maç tek b
 
 1. iPhone `HomeView`, oyuncular ve maç ayarlarıyla `MatchStore.start` çağırır.
 2. Store aktif maçı `active-match.json` dosyasına yazar ve WatchConnectivity ile yayınlar.
-3. iPhone veya Watch üzerindeki puan dokunuşu `PadelScoringEngine.awardPoint` çağırır.
+3. iPhone üzerindeki puan dokunuşu skor motorunu doğrudan çalıştırır; Watch dokunuşu eşlenmiş iPhone'a kimlikli bir komut gönderir.
 4. Motor önce `ScoreSnapshot` kaydeder; bu snapshot undo için kullanılır.
 5. Güncel maç `updateApplicationContext` ile kalıcı son durum, `sendMessage` ile erişilebiliyorsa anlık mesaj olarak gönderilir.
-6. Karşı cihaz maçı decode eder, kendi store'una uygular, diske yazar ve tekrar yayınlar.
+6. Watch gelen resmi state'i yalnızca daha yeni revizyondaysa uygular; aynı state'i iPhone'a geri yayınlamaz.
 7. Maç tamamlanınca veya erken bitirilince sonuç `matches.json` arşivine eklenir.
 
 Yakındaki oyuncular için iPhone-iPhone session akışı:
@@ -55,6 +55,8 @@ Yakındaki oyuncular için iPhone-iPhone session akışı:
 5. Katılımcı iPhone ve ona bağlı Watch skor hesaplamaz; `awardPoint`, `undo`, `finishEarly` komutlarını host'a iletir.
 6. Host iPhone komutu işler, `syncRevision` artırır ve resmi `PadelMatch` state'ini tüm katılımcılara ve kendi Watch'una yayınlar.
 7. Katılımcı iPhone aldığı resmi state'i kendi Watch'una aktarır.
+8. Her komut maç kimliği ve benzersiz mesaj kimliği taşır. Host yanlış maça ait veya daha önce işlenmiş komutları reddeder.
+9. Maç kapanırken son state `clear` mesajıyla birlikte gönderilir. Kapanan maç kimliği tombstone olarak tutulduğu için gecikmiş state aktif maçı yeniden açamaz.
 
 Watch-to-Watch doğrudan bağlantı yoktur. Her Watch yalnızca kendi iPhone'u ile `WatchConnectivity` üzerinden konuşur.
 
@@ -177,7 +179,7 @@ Watch uygulamasındaki genel “This application cannot be installed right now�
 
 ## Bilinen teknik riskler ve sonraki işler
 
-- WatchConnectivity döngüleri aynı durumu iki cihaz arasında tekrar yayınlayabilir; revision/origin alanı eklenmeli.
+- WatchConnectivity skor state'i tek yönlüdür; Watch yalnızca komut ve antrenman metriği gönderir. Gerçek cihazlarda erişilebilirlik/gecikme ölçümü için telemetry hâlâ eklenmeli.
 - Yakındaki session'da host-authoritative `syncRevision` var; uzun vadede kalıcı event log ve origin device ID eklenmeli.
 - JSON hataları sessizce yutuluyor; kullanıcıya hata ve telemetry katmanı yok.
 - Workout adım sorgusu her saniye çalışıyor; enerji tüketimi için daha seyrek sorgu veya observer yaklaşımı değerlendirilmeli.

@@ -15,7 +15,7 @@ final class NearbyMatchSessionCoordinator: NSObject, ObservableObject {
 
     var onMatchReceived: ((PadelMatch) -> Void)?
     var onCommandReceived: ((MatchSessionCommand) -> Void)?
-    var onCleared: (() -> Void)?
+    var onCleared: ((PadelMatch?) -> Void)?
     var onPeerConnected: (() -> Void)?
 
     private static let serviceType = "ralli-padel"
@@ -107,9 +107,17 @@ final class NearbyMatchSessionCoordinator: NSObject, ObservableObject {
         send(MatchSessionEnvelope(kind: .command, match: nil, command: command), to: session.connectedPeers)
     }
 
-    func clear() {
-        send(MatchSessionEnvelope(kind: .clear, match: nil, command: nil), to: session.connectedPeers)
-        stop()
+    func clear(_ match: PadelMatch) {
+        send(MatchSessionEnvelope(kind: .clear, match: match, command: nil), to: session.connectedPeers)
+        advertiser?.stopAdvertisingPeer()
+        advertiser = nil
+
+        let closingSession = session
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
+            guard let self, self.role == .host else { return }
+            guard self.session === closingSession else { return }
+            self.stop()
+        }
     }
 
     static func makeMatchCode() -> String {
@@ -144,7 +152,7 @@ final class NearbyMatchSessionCoordinator: NSObject, ObservableObject {
             guard role == .host, let command = envelope.command else { return }
             onCommandReceived?(command)
         case .clear:
-            onCleared?()
+            onCleared?(envelope.match)
         }
     }
 

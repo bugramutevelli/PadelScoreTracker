@@ -130,6 +130,53 @@ final class PadelScoringEngineTests: XCTestCase {
         XCTAssertEqual(match.home.displayName, "A & B")
     }
 
+    func testSyncPolicyRejectsEqualAndOlderRevisions() {
+        let matchID = UUID()
+        let current = PadelMatch(id: matchID, syncRevision: 4)
+
+        XCTAssertFalse(MatchSyncPolicy.shouldAccept(
+            remote: PadelMatch(id: matchID, syncRevision: 4),
+            current: current,
+            closedMatchIDs: []
+        ))
+        XCTAssertFalse(MatchSyncPolicy.shouldAccept(
+            remote: PadelMatch(id: matchID, syncRevision: 3),
+            current: current,
+            closedMatchIDs: []
+        ))
+        XCTAssertTrue(MatchSyncPolicy.shouldAccept(
+            remote: PadelMatch(id: matchID, syncRevision: 5),
+            current: current,
+            closedMatchIDs: []
+        ))
+    }
+
+    func testSyncPolicyRejectsClosedMatchWithoutActiveState() {
+        let remote = PadelMatch(syncRevision: 9)
+
+        XCTAssertFalse(MatchSyncPolicy.shouldAccept(
+            remote: remote,
+            current: nil,
+            closedMatchIDs: [remote.id]
+        ))
+    }
+
+    func testSyncPolicyDoesNotReplaceAnotherActiveMatch() {
+        let current = PadelMatch(syncRevision: 3)
+        let remote = PadelMatch(syncRevision: 99)
+
+        XCTAssertFalse(MatchSyncPolicy.shouldAccept(
+            remote: remote,
+            current: current,
+            closedMatchIDs: []
+        ))
+    }
+
+    func testEarlyEndedMatchIsFinished() {
+        let match = PadelMatch(endedAt: Date())
+        XCTAssertTrue(match.isFinished)
+    }
+
     private func repeatPoint(_ team: Team, _ count: Int, in match: inout PadelMatch) {
         for _ in 0..<count { PadelScoringEngine.awardPoint(to: team, in: &match) }
     }

@@ -15,6 +15,8 @@ final class MatchStore: ObservableObject {
     private let activeFileURL: URL
     private let sync = WatchSessionCoordinator.shared
     private var cancellables: Set<AnyCancellable> = []
+    private var closedMatchIDs: Set<UUID> = []
+    private var processedCommandIDs: Set<UUID> = []
     #if os(iOS)
     private let nearby = NearbyMatchSessionCoordinator.shared
     #endif
@@ -26,17 +28,19 @@ final class MatchStore: ObservableObject {
         self.fileURL = fileURL ?? directory.appendingPathComponent("matches.json")
         self.activeFileURL = activeFileURL ?? directory.appendingPathComponent("active-match.json")
         load()
+        closedMatchIDs = Set(matches.map(\.id))
+        if let activeMatch { closedMatchIDs.remove(activeMatch.id) }
         sync.onMatchReceived = { [weak self] match in
             Task { @MainActor in self?.acceptWatchRemote(match) }
         }
         sync.onCommandReceived = { [weak self] command in
             Task { @MainActor in self?.executeWatchCommand(command) }
         }
-        sync.onMatchCleared = { [weak self] in
-            Task { @MainActor in
-                self?.activeMatch = nil
-                self?.clearActive()
-            }
+        sync.onMatchCleared = { [weak self] match in
+            Task { @MainActor in self?.handleRemoteClear(match) }
+        }
+        sync.onWorkoutMetricsReceived = { [weak self] matchID, metrics in
+            Task { @MainActor in self?.acceptWorkoutMetrics(metrics, for: matchID) }
         }
         sync.onActiveMatchRequested = { [weak self] in
             Task { @MainActor in self?.broadcast() }
@@ -45,22 +49,22 @@ final class MatchStore: ObservableObject {
     }
 
     func start(home: TeamPlayers, away: TeamPlayers, rule: ScoringRule, format: MatchFormat, firstServerIndex: Int) {
-        activeMatch = PadelMatch(syncRevision: 1, home: home, away: away, rule: rule, format: format, serverIndex: firstServerIndex)
+        let match = PadelMatch(syncRevision: 1, home: home, away: away, rule: rule, format: format, serverIndex: firstServerIndex)
+        activeMatch = match
+        closedMatchIDs.remove(match.id)
+        processedCommandIDs.removeAll()
         saveActive()
         broadcast()
     }
 
     func awardPoint(to team: Team) {
         #if os(watchOS)
-        sendWatchCommand(.awardPoint(team))
-        guard var match = activeMatch else { return }
-        PadelScoringEngine.awardPoint(to: team, in: &match)
-        bumpRevision(&match)
-        activeMatch = match
-        persistActiveIfNeeded()
+        guard let match = activeMatch else { return }
+        sendWatchCommand(.awardPoint(team, matchID: match.id))
         #else
         guard nearbyRole != .participant else {
-            sendNearbyCommand(.awardPoint(team))
+            guard let matchID = activeMatch?.id else { return }
+            sendNearbyCommand(.awardPoint(team, matchID: matchID))
             return
         }
         guard var match = activeMatch else { return }
@@ -75,15 +79,12 @@ final class MatchStore: ObservableObject {
 
     func undo() {
         #if os(watchOS)
-        sendWatchCommand(.undo)
-        guard var match = activeMatch else { return }
-        PadelScoringEngine.undo(in: &match)
-        bumpRevision(&match)
-        activeMatch = match
-        saveActive()
+        guard let match = activeMatch else { return }
+        sendWatchCommand(.undo(matchID: match.id))
         #else
         guard nearbyRole != .participant else {
-            sendNearbyCommand(.undo)
+            guard let matchID = activeMatch?.id else { return }
+            sendNearbyCommand(.undo(matchID: matchID))
             return
         }
         guard var match = activeMatch else { return }
@@ -99,55 +100,43 @@ final class MatchStore: ObservableObject {
     func updateWorkoutMetrics(_ metrics: WorkoutMetrics) {
         guard var match = activeMatch, match.workoutMetrics != metrics else { return }
         match.workoutMetrics = metrics
-        #if os(iOS)
-        guard nearbyRole != .participant else {
-            activeMatch = match
-            saveActive()
-            broadcast()
-            return
-        }
-        #endif
-        if nearbyRole != .participant {
-            bumpRevision(&match)
-        }
         activeMatch = match
-        persistActiveIfNeeded()
-        broadcast()
-        broadcastNearbyState()
+        saveActive()
+        #if os(watchOS)
+        sync.sendWorkoutMetrics(metrics, for: match.id)
+        #endif
     }
 
     func finishEarly() {
         #if os(watchOS)
-        sendWatchCommand(.finishEarly)
-        guard var match = activeMatch else { return }
-        match.endedAt = Date()
-        bumpRevision(&match)
-        archive(match)
-        activeMatch = nil
-        clearActive()
+        guard let match = activeMatch else { return }
+        sendWatchCommand(.finishEarly(matchID: match.id))
         #else
         guard nearbyRole != .participant else {
-            sendNearbyCommand(.finishEarly)
+            guard let matchID = activeMatch?.id else { return }
+            sendNearbyCommand(.finishEarly(matchID: matchID))
             return
         }
         guard var match = activeMatch else { return }
         match.endedAt = Date()
         bumpRevision(&match)
         archive(match)
+        closedMatchIDs.insert(match.id)
         activeMatch = nil
         clearActive()
-        sync.clearMatch()
-        clearNearbySession()
+        sync.clearMatch(match)
+        clearNearbySession(match)
         #endif
     }
 
     func closeCompletedMatch() {
         guard let match = activeMatch, match.isFinished else { return }
         archive(match)
+        closedMatchIDs.insert(match.id)
         activeMatch = nil
         clearActive()
-        sync.clearMatch()
-        clearNearbySession()
+        sync.clearMatch(match)
+        clearNearbySession(match)
     }
 
     func requestActiveMatch() {
@@ -198,15 +187,32 @@ final class MatchStore: ObservableObject {
 
     private func acceptWatchRemote(_ match: PadelMatch) {
         #if os(iOS)
-        guard nearbyRole != .participant else { return }
+        guard activeMatch == nil else { return }
         #endif
-        acceptRemote(match)
+        acceptRemoteState(match)
     }
 
-    private func acceptRemote(_ match: PadelMatch) {
-        activeMatch = mergedRemoteMatch(match)
+    @discardableResult
+    private func acceptRemoteState(_ match: PadelMatch) -> Bool {
+        guard MatchSyncPolicy.shouldAccept(
+            remote: match,
+            current: activeMatch,
+            closedMatchIDs: closedMatchIDs
+        ) else { return false }
+
+        var accepted = match
+        #if os(watchOS)
+        if let localMetrics = activeMatch?.workoutMetrics {
+            accepted.workoutMetrics = localMetrics
+        }
+        #else
+        if nearbyRole == .participant, let localMetrics = activeMatch?.workoutMetrics {
+            accepted.workoutMetrics = localMetrics
+        }
+        #endif
+        activeMatch = accepted
         persistActiveIfNeeded()
-        broadcast()
+        return true
     }
 
     private func broadcast() {
@@ -216,17 +222,6 @@ final class MatchStore: ObservableObject {
 
     private func bumpRevision(_ match: inout PadelMatch) {
         match.syncRevision += 1
-    }
-
-    private func mergedRemoteMatch(_ remote: PadelMatch) -> PadelMatch {
-        guard var current = activeMatch, current.id == remote.id else { return remote }
-        guard remote.syncRevision >= current.syncRevision else { return current }
-        let localMetrics = current.workoutMetrics
-        current = remote
-        if nearbyRole == .participant, localMetrics != nil {
-            current.workoutMetrics = localMetrics
-        }
-        return current
     }
 
     private func executeNearbyCommand(_ command: MatchSessionCommand) {
@@ -245,7 +240,10 @@ final class MatchStore: ObservableObject {
     }
 
     private func executeLocalCommand(_ command: MatchSessionCommand) {
-        switch command {
+        guard activeMatch?.id == command.matchID else { return }
+        guard processedCommandIDs.insert(command.id).inserted else { return }
+
+        switch command.action {
         case .awardPoint(let team):
             guard var match = activeMatch else { return }
             PadelScoringEngine.awardPoint(to: team, in: &match)
@@ -284,17 +282,20 @@ final class MatchStore: ObservableObject {
         #endif
     }
 
-    private func clearNearbySession() {
+    private func clearNearbySession(_ match: PadelMatch) {
         guard nearbyRole == .host else { return }
         #if os(iOS)
-        nearby.clear()
+        nearby.clear(match)
         #endif
     }
 
     private func configureNearbySession() {
         #if os(iOS)
         nearby.onMatchReceived = { [weak self] match in
-            Task { @MainActor in self?.acceptRemote(match) }
+            Task { @MainActor in
+                guard let self, self.nearbyRole == .participant else { return }
+                if self.acceptRemoteState(match) { self.broadcast() }
+            }
         }
         nearby.onCommandReceived = { [weak self] command in
             Task { @MainActor in self?.executeNearbyCommand(command) }
@@ -302,11 +303,12 @@ final class MatchStore: ObservableObject {
         nearby.onPeerConnected = { [weak self] in
             Task { @MainActor in self?.broadcastNearbyState() }
         }
-        nearby.onCleared = { [weak self] in
+        nearby.onCleared = { [weak self] match in
             Task { @MainActor in
-                self?.activeMatch = nil
-                self?.clearActive()
-                self?.sync.clearMatch()
+                guard let self else { return }
+                let finalizedMatch = self.handleRemoteClear(match)
+                if let finalizedMatch { self.sync.clearMatch(finalizedMatch) }
+                self.nearby.stop()
             }
         }
 
@@ -341,6 +343,38 @@ final class MatchStore: ObservableObject {
 
     private func clearActive() {
         try? FileManager.default.removeItem(at: activeFileURL)
+    }
+
+    private func acceptWorkoutMetrics(_ metrics: WorkoutMetrics, for matchID: UUID) {
+        guard var match = activeMatch, match.id == matchID else { return }
+        guard match.workoutMetrics != metrics else { return }
+        match.workoutMetrics = metrics
+        activeMatch = match
+        saveActive()
+    }
+
+    @discardableResult
+    private func handleRemoteClear(_ finalizedMatch: PadelMatch?) -> PadelMatch? {
+        var matchToClose = finalizedMatch
+        if var finalizedMatch,
+           finalizedMatch.id == activeMatch?.id,
+           let localMetrics = activeMatch?.workoutMetrics {
+            finalizedMatch.workoutMetrics = localMetrics
+            matchToClose = finalizedMatch
+        }
+        if matchToClose == nil, var current = activeMatch {
+            current.endedAt = current.endedAt ?? Date()
+            matchToClose = current
+        }
+        guard let matchToClose else { return nil }
+
+        archive(matchToClose)
+        closedMatchIDs.insert(matchToClose.id)
+        if activeMatch?.id == matchToClose.id {
+            activeMatch = nil
+            clearActive()
+        }
+        return matchToClose
     }
 }
 

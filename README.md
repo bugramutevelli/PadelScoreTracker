@@ -25,9 +25,9 @@ Apple Watch ekranını büyük ve etkileşimli görmek için `Preview/watch.html
 
 ## Yakındaki oyuncularla maç session'ı
 
-iPhone canlı maç ekranındaki paylaşım kontrolü 6 haneli bir maç kodu üretir ve host iPhone'u yerel ağda yayınlar. Diğer oyuncular iPhone ana ekranındaki kod alanıyla maça katılır. Skorun resmi kaynağı host iPhone'dur; katılımcı iPhone ve Apple Watch cihazları puan, undo ve bitir komutlarını host'a iletir, host yeni skor durumunu herkese geri yayınlar.
+iPhone canlı maç ekranındaki paylaşım kontrolü 6 haneli bir maç kodu üretir ve host iPhone'u yerel ağda yayınlar. Diğer oyuncular iPhone ana ekranındaki kod alanıyla maça katılır. Skorun resmi kaynağı host iPhone'dur; katılımcı iPhone ve Apple Watch cihazları puan, undo ve bitir komutlarını host'a iletir, host yeni skor durumunu herkese geri yayınlar. Her komut maç ve mesaj kimliği taşır; gecikmiş veya yinelenen komutlar host tarafından yok sayılır.
 
-Bu özellik TestFlight ile gerçek cihazlarda denenebilir. İlk bağlantıda iOS yerel ağ izni ister.
+Bu özellik TestFlight ile gerçek cihazlarda denenebilir. İlk bağlantıda iOS yerel ağ izni ister. iPhone'lar `MultipeerConnectivity` ile yerel ağ üzerinden bağlanır; Watch cihazları doğrudan birbirine değil, `WatchConnectivity` ile kendi eşlenmiş iPhone'larına bağlanır.
 
 ## Projeyi açma
 
